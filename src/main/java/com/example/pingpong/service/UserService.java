@@ -32,7 +32,12 @@ public class UserService {
 
     public User createGuestAccount() {
         User guestUser = new User();
-        guestUser.setNickname("GUEST" + new Random().nextInt(100000));
+        String guestNickName;
+        do {
+            guestNickName = "GUEST" + new Random().nextInt(100000);
+        } while(userRepository.existsByNickname(guestNickName));
+
+        guestUser.setNickname(guestNickName);
         guestUser.setPassword(UUID.randomUUID().toString());
         return userRepository.save(guestUser);
     }
