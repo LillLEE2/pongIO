@@ -1,7 +1,7 @@
-package com.example.pingpong.service;
+package com.example.pingpong.user.service;
 
-import com.example.pingpong.model.User;
-import com.example.pingpong.repository.UserRepository;
+import com.example.pingpong.user.model.User;
+import com.example.pingpong.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 

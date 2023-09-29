@@ -1,4 +1,4 @@
-package com.example.pingpong.model;
+package com.example.pingpong.user.model;
 
 
 import lombok.Getter;

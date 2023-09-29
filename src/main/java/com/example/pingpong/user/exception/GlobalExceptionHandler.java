@@ -1,4 +1,4 @@
-package com.example.pingpong.exception;
+package com.example.pingpong.user.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
