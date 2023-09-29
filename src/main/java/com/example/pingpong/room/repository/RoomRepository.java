@@ -6,4 +6,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface RoomRepository extends JpaRepository<GameRoom, Integer> {
+
+    boolean existsByRoomId(String roomId);
+    void deleteByRoomId(String roomId);
+
 }

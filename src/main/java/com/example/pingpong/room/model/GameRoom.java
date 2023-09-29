@@ -1,8 +1,6 @@
 package com.example.pingpong.room.model;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -20,33 +18,33 @@ public class GameRoom {
     private Long pk;
 
     @Column(name = "room_id", nullable = false, unique = true)
-    private final String roomId;
+    private String roomId;
 
     @Column(name = "room_name", nullable = false)
-    private final String roomName;
+    private String roomName;
 
     @Column(name = "room_owner_nickname", nullable = false)
-    private final String roomOwnerNickname;
+    private String roomOwnerNickname;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "game_mode", nullable = false)
+    @Column(name = "game_mode")
     private GameMode gameMode;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "room_type", nullable = false)
+    @Column(name = "room_type")
     private RoomType roomType;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "room_status", nullable = false)
+    @Column(name = "room_status")
     private RoomStatus roomStatus;
 
-    @Column(name = "max_players", nullable = false)
+    @Column(name = "max_players")
     private Integer maxPlayers;
 
-    @Column(name = "cur_players_cnt", nullable = false)
+    @Column(name = "cur_players_cnt")
     private Integer curPlayersCnt = 0;
 
-    @Column(name = "is_private", nullable = false)
+    @Column(name = "is_private")
     private Boolean isPrivate;
 
     @Column(name = "started_dt")
@@ -54,5 +52,36 @@ public class GameRoom {
 
     @Column(name = "ended_dt")
     private LocalDateTime endedDateTime;
+
+    private GameRoom(Builder builder) {
+        this.roomId = builder.roomId;
+        this.roomName = builder.roomName;
+        this.roomOwnerNickname = builder.roomOwnerNickname;
+    }
+
+    public static class Builder {
+        private String roomId;
+        private String roomName;
+        private String roomOwnerNickname;
+
+        public Builder roomId(String roomId) {
+            this.roomId = roomId;
+            return this;
+        }
+
+        public Builder roomName(String roomName) {
+            this.roomName = roomName;
+            return this;
+        }
+
+        public Builder roomOwnerNickname(String roomOwnerNickname) {
+            this.roomOwnerNickname = roomOwnerNickname;
+            return this;
+        }
+
+        public GameRoom build() {
+            return new GameRoom(this);
+        }
+    }
 
 }
