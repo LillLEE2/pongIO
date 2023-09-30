@@ -1,6 +1,7 @@
 package com.example.pingpong.user.service;
 
 import com.example.pingpong.user.model.User;
+import com.example.pingpong.user.model.UserStatus;
 import com.example.pingpong.user.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,12 +20,13 @@ public class UserService {
     }
 
     public Optional<User> findByNickname(String nickname) {
-        return Optional.ofNullable(userRepository.findByNickname(nickname));
+        return userRepository.findByNickname(nickname);
     }
 
     public Optional<User> login(String nickname, String password) {
         Optional<User> user = findByNickname(nickname);
         if (user.isPresent() && user.get().getPassword().equals(password)) {
+            user.get().setStatusCode(UserStatus.ONLINE);
             return user;
         }
         return Optional.empty();
@@ -39,6 +41,7 @@ public class UserService {
 
         guestUser.setNickname(guestNickName);
         guestUser.setPassword(UUID.randomUUID().toString());
+        guestUser.setStatusCode(UserStatus.ONLINE);
         return userRepository.save(guestUser);
     }
 }

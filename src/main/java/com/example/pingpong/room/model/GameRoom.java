@@ -42,7 +42,7 @@ public class GameRoom {
     private Integer maxPlayers;
 
     @Column(name = "cur_players_cnt")
-    private Integer curPlayersCnt = 0;
+    private Integer curPlayersCnt = 1;
 
     @Column(name = "is_private")
     private Boolean isPrivate;
@@ -57,6 +57,10 @@ public class GameRoom {
         this.roomId = builder.roomId;
         this.roomName = builder.roomName;
         this.roomOwnerNickname = builder.roomOwnerNickname;
+    }
+
+    public void setCurPlayersCnt(int curPlayersCnt) {
+        this.curPlayersCnt = curPlayersCnt;
     }
 
     public static class Builder {

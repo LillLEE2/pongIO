@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<div id="countSection">
+  <span th:include="countFragment :: count"></span>
+</div>
+<button onclick="updateCount('/api/test/increment')">Increment</button>
+<button onclick="updateCount('/api/test/decrement')">Decrement</button>
+
+<script>
+
+  function updateCount(url) {
+    $.ajax({
+      url: url,
+      success: function(response) {
+        $('#countSection').html(response);
+      }
+    });
+  }
+</script>
+</body>
+</html>

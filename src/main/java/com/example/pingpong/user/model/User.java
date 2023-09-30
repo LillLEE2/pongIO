@@ -31,4 +31,8 @@ public class User {
     @Column(name = "email")
     private String email;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_code")
+    private UserStatus statusCode;
+
 }
