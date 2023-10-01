@@ -12,11 +12,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class TestHandler extends TextWebSocketHandler {
+public class GameHandler extends TextWebSocketHandler {
 
     //현재 연결된 클라이언트 배열
     private static List<WebSocketSession> list = new ArrayList<>();
-    private final Logger logger = LoggerFactory.getLogger(TestHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(GameHandler.class);
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
