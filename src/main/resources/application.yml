@@ -19,8 +19,13 @@ spring:
     suffix: .html  # 템플릿 파일 확장자
     cache: false  # 개발 중이라면 캐싱을 비활성화
     mode: HTML5  # HTML5 모드 사용
-
-
+  redis:
+    pool:
+      min-idle: 0
+      max-idle: 8
+      max-active: 8
+    port: 6379
+    host: 127.0.0.1
 
 logging:
   level:

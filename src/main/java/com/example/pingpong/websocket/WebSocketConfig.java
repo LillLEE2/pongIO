@@ -14,7 +14,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(testHandler, "/websocket/game")
-//        .setAllowedOrigins("http://localhost:3000")
-        .setAllowedOriginPatterns("*");
+        .setAllowedOriginPatterns("*")
+        .addInterceptors( new HttpSessionIdHandshakeInterceptor());
     }
 }
