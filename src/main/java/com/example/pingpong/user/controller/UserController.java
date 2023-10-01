@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @AllArgsConstructor
@@ -21,6 +22,7 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {
+        System.out.println("호출은 됨");
         User createdUser = userService.saveUser(user);
         return ResponseEntity.ok(createdUser);
     }
@@ -48,10 +50,15 @@ public class UserController {
     }
 
     @GetMapping("/exists/{nickName}")
-    public ResponseEntity<Void> doesUserExist(@PathVariable String nickName) {
-        return userService.findByNickname(nickName).isPresent() ?
-                ResponseEntity.ok().build() :
-                ResponseEntity.notFound().build();
+    public ResponseEntity<Boolean> doesUserExist(@PathVariable String nickName) {
+        boolean nickNameExist;
+        Optional<User> user = userService.findByNickname(nickName);
+        nickNameExist = user.isPresent();
+
+        return ResponseEntity.ok(nickNameExist);
+//        return userService.findByNickname(nickName).isPresent() ?
+//                ResponseEntity.ok().build() :
+//                ResponseEntity.notFound().build();
     }
 
     @PostMapping("/login")
