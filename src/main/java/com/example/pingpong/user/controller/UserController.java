@@ -14,6 +14,7 @@ import java.util.Map;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/users")
+@CrossOrigin("*")
 public class UserController {
 
     private final UserService userService;
@@ -58,5 +59,10 @@ public class UserController {
         return userService.login(loginUser.getNickname(), loginUser.getPassword())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+    }
+
+    @GetMapping("/test")
+    public void test(HttpServletRequest request) {
+        System.out.println("====");
     }
 }
