@@ -1,6 +1,7 @@
 package com.example.pingpong.websocket;
 
 import com.example.pingpong.queue.service.QueueService;
+import com.example.pingpong.user.model.User;
 import com.example.pingpong.user.service.UserService;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
@@ -21,6 +22,7 @@ public class GameHandler extends TextWebSocketHandler {
     private final Logger logger = LoggerFactory.getLogger(GameHandler.class);
 
     private final QueueService queueService;
+    private final UserService userService;
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
@@ -30,15 +32,16 @@ public class GameHandler extends TextWebSocketHandler {
             String nickname = String.valueOf(session.getAttributes().get("nickname"));
             String addMessage = queueService.joinNormalQueue(nickname);
             if (addMessage.equals("normalModeMatchingSuccess")) {
-
                 QueueService.normalQueue.clear();
-                logger.info(addMessage);
+                message = new TextMessage(addMessage);
             } else {
                 logger.info("매칭 중");
             }
             logger.error("확인");
-        }
-//
+        } else if ("speed_matching".equals(payload)){ }
+
+        session.sendMessage(message);
+
 //        for(WebSocketSession sess: list) {
 //            if (sess != session)
 //                sess.sendMessage(message);
@@ -47,14 +50,16 @@ public class GameHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         session.sendMessage(new TextMessage("Welcome to the WebSocket server!"));
+        String nickname = String.valueOf(session.getAttributes().get("nickname"));
+        userService.setUserSocketId(nickname, session.getId());
         logger.error("연결됨");
-        // DB update
-        //DB에 유저와 매핑 로직 추가 예정
     }
 
     //소켓 끊기면 호출
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        String nickname = String.valueOf(session.getAttributes().get("nickname"));
+        userService.setUserSocketId(nickname, "");
         logger.error("연결 끊김");
     }
 }

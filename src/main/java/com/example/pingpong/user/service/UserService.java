@@ -44,4 +44,10 @@ public class UserService {
         guestUser.setStatusCode(UserStatus.ONLINE);
         return userRepository.save(guestUser);
     }
+
+    public void setUserSocketId(String nickName, String socketId) {
+        User user = userRepository.findByNickname(nickName).get();
+        user.setSocketId(socketId);
+        userRepository.save(user);
+    }
 }
