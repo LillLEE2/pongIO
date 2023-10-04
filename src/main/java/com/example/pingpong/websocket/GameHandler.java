@@ -1,6 +1,8 @@
 package com.example.pingpong.websocket;
 
+import com.example.pingpong.queue.service.QueueService;
 import com.example.pingpong.user.service.UserService;
+import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -13,18 +15,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@AllArgsConstructor
 public class GameHandler extends TextWebSocketHandler {
 
-    //현재 연결된 클라이언트 배열
-    private static List<WebSocketSession> list = new ArrayList<>();
     private final Logger logger = LoggerFactory.getLogger(GameHandler.class);
+
+    private final QueueService queueService;
+
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String payload = message.getPayload();
         logger.info("payload : " + payload);
+        if ("normal_matching".equals(payload)) {
+            String nickname = String.valueOf(session.getAttributes().get("nickname"));
+            String addMessage = queueService.joinNormalQueue(nickname);
+            if (addMessage.equals("normalModeMatchingSuccess")) {
 
-        if ("matching".equals(payload)) {
-            //매칭 버튼을 누르면 여기로 이벤트가 온다
+                QueueService.normalQueue.clear();
+                logger.info(addMessage);
+            } else {
+                logger.info("매칭 중");
+            }
             logger.error("확인");
         }
 //
@@ -38,15 +49,12 @@ public class GameHandler extends TextWebSocketHandler {
         session.sendMessage(new TextMessage("Welcome to the WebSocket server!"));
         logger.error("연결됨");
         // DB update
-        list.add(session);
         //DB에 유저와 매핑 로직 추가 예정
     }
 
     //소켓 끊기면 호출
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        list.remove(session);
         logger.error("연결 끊김");
-        //DB에 유저 업데이트 로직 추가 예정
     }
 }
