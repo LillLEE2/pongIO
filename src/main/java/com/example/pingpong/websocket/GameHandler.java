@@ -1,5 +1,7 @@
 package com.example.pingpong.websocket;
 
+import com.example.pingpong.global.Global;
+import com.example.pingpong.queue.dto.QueueJoinResult;
 import com.example.pingpong.queue.service.QueueService;
 import com.example.pingpong.user.model.User;
 import com.example.pingpong.user.service.UserService;
@@ -28,19 +30,19 @@ public class GameHandler extends TextWebSocketHandler {
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String payload = message.getPayload();
         logger.info("payload : " + payload);
-        if ("normal_matching".equals(payload)) {
+        if (Global.NORMAL_MATCHING_SUCCESS.equals(payload)) {
             String nickname = String.valueOf(session.getAttributes().get("nickname"));
-            String addMessage = queueService.joinNormalQueue(nickname);
-            if (addMessage.equals("normalModeMatchingSuccess")) {
+            QueueJoinResult joinResult = queueService.joinNormalQueue(nickname);
+            if (joinResult.isSuccess()) {
                 QueueService.normalQueue.clear();
-                message = new TextMessage(addMessage);
+                message = new TextMessage(joinResult.getMessage());
             } else {
                 logger.info("매칭 중");
             }
             logger.error("확인");
-        } else if ("speed_matching".equals(payload)){ }
+        } else if ( Global.SPEED_MATCHING_SUCCESS.equals(payload)){ }
 
-        session.sendMessage(message);
+//        session.sendMessage(message);
 
 //        for(WebSocketSession sess: list) {
 //            if (sess != session)

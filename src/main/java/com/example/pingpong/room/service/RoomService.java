@@ -40,7 +40,7 @@ public class RoomService {
         gameRoom.setCurPlayersCnt(gameRoom.getCurPlayersCnt() + 1);
 
         User user = userRepository.findByNickname(userNickname).get();
-        user.setStatusCode(UserStatus.INGAME);
+        user.setStatusCode(UserStatus.IN_GAME);
         return user;
     }
 
