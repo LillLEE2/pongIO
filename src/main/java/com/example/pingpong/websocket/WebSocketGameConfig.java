@@ -12,7 +12,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
 public class WebSocketGameConfig implements WebSocketMessageBrokerConfigurer {
-    private final GameHandler gameHandler;
+//    private final GameHandler gameHandler;
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/stomp/test").setAllowedOriginPatterns("*").withSockJS();
@@ -24,8 +24,8 @@ public class WebSocketGameConfig implements WebSocketMessageBrokerConfigurer {
         registry.setApplicationDestinationPrefixes("/stomp");
     }
 
-    @Override
-    public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(gameHandler);
-    }
+//    @Override
+//    public void configureClientInboundChannel(ChannelRegistration registration) {
+//        registration.interceptors(gameHandler);
+//    }
 }
