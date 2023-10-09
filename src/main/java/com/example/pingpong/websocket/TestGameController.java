@@ -76,12 +76,12 @@ public class TestGameController {
 
     @MessageMapping("/positionUpdate")
     public void positionUpdate(String roomName) {
-        System.out.println("position update");
+        System.out.println("/position_update/" + roomName);
         GameInfomation gameRoom = this.gameRooms.get(roomName);
         ballUpdate(gameRoom);
         ballCollision(gameRoom);
         boolean gameFinished = gameScoreCheck(gameRoom);
-        messagingTemplate.convertAndSendToUser(roomName, "/position_update", gameRoom.getElement());
+        messagingTemplate.convertAndSend("/topic/position_update/" + roomName, gameRoom.getElement());
         if (gameFinished)
             finishGame(gameRoom, roomName);
     }
@@ -197,6 +197,6 @@ public class TestGameController {
         }
         System.out.println("game finished");
         System.out.println("left score: " + gameRoom.getElement().getLeftScore() + ", right score: " + gameRoom.getElement().getRightScore());
-        messagingTemplate.convertAndSendToUser(roomName, "/finish_game", roomName);
+        messagingTemplate.convertAndSend( "/topic/finish_game" + roomName, 0);
     }
 }
