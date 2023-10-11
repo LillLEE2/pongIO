@@ -1,8 +1,9 @@
-package com.example.pingpong.game.model;
+package com.example.pingpong.game.dto;
 
 import java.util.concurrent.ScheduledFuture;
 
 public class GameInfomation {
+    private String[] users;
     private int maxScore;
     private GameElement gameElement;
     private double velocityX;
@@ -11,21 +12,30 @@ public class GameInfomation {
     private int rightPaddleStatus;
     private ScheduledFuture<?> timer;
     public GameInfomation() {
+        this.users = new String[2];
         this.gameElement = new GameElement();
-        this.maxScore = 3;
+        this.maxScore = 11;
         this.velocityX = 0.5;
         this.velocityY = 0.25;
         this.leftPaddleStatus = 0;
         this.rightPaddleStatus = 0;
         this.timer = null;
     }
-    public GameInfomation(int maxScore, GameElement gameElement, double velocityX, double velocityY, int leftPaddleStatus, int rightPaddleStatus) {
+    public GameInfomation(String users[], int maxScore, GameElement gameElement, double velocityX, double velocityY, int leftPaddleStatus, int rightPaddleStatus) {
+        this.users = users;
         this.maxScore = maxScore;
         this.gameElement = gameElement;
         this.velocityX = velocityX;
         this.velocityY = velocityY;
         this.leftPaddleStatus = leftPaddleStatus;
         this.rightPaddleStatus = rightPaddleStatus;
+    }
+    public String getUser(int index) {
+        return users[index];
+    }
+
+    public void setUser(int index, String user) {
+        this.users[index] = user;
     }
     public int getMaxScore() {
         return maxScore;

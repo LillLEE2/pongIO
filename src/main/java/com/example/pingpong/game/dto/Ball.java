@@ -1,4 +1,4 @@
-package com.example.pingpong.game.model;
+package com.example.pingpong.game.dto;
 
 public class Ball {
     private double x;

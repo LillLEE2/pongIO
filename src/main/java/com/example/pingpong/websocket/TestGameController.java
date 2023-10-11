@@ -1,9 +1,6 @@
 package com.example.pingpong.websocket;
 
-import com.example.pingpong.game.model.Ball;
-import com.example.pingpong.game.model.GameElement;
-import com.example.pingpong.game.model.GameInfomation;
-import com.example.pingpong.game.model.Paddle;
+import com.example.pingpong.game.dto.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -60,6 +57,8 @@ public class TestGameController {
         matchUsers.put(gameRoomId, userList);
         String destination = "/topic/matching-success";
         this.gameRooms.put(gameRoomId, new GameInfomation());
+        this.gameRooms.get(gameRoomId).setUser(0, userList.get(0));
+        this.gameRooms.get(gameRoomId).setUser(1, userList.get(1));
         Runnable positionUpdateTask = () -> {
             positionUpdate(gameRoomId);
         };
@@ -76,8 +75,7 @@ public class TestGameController {
 
     @MessageMapping("/positionUpdate")
     public void positionUpdate(String roomName) {
-        System.out.println("/position_update/" + roomName);
-        GameInfomation gameRoom = this.gameRooms.get(roomName);
+        GameInfomation gameRoom = gameRooms.get(roomName);
         ballUpdate(gameRoom);
         ballCollision(gameRoom);
         boolean gameFinished = gameScoreCheck(gameRoom);
@@ -86,18 +84,20 @@ public class TestGameController {
             finishGame(gameRoom, roomName);
     }
 
-//    @MessageMapping("/paddleMove")
-//    public void paddleMove(PaddleMoveRequest data) {
-//        GameInformation gameRoom = gameService.getGameRoom(data.getRoomName());
-//        if (gameRoom == null) {
-//            return;
-//        }
-//        if (data.isOwner()) {
-//            gameRoom.setLeftPaddleStatus(data.getPaddleStatus());
-//        } else {
-//            gameRoom.setRightPaddleStatus(data.getPaddleStatus());
-//        }
-//    }
+    @MessageMapping("/paddle_move")
+    public void paddleMove(SimpMessageHeaderAccessor accessor, PaddleMoveData data) {
+        System.out.println("/paddle_move/" + data.getGameRoomId() + " " + data.getPaddleStatus());
+        GameInfomation gameRoom = gameRooms.get(data.getGameRoomId());
+        if (gameRoom == null) {
+            return;
+        }
+        if (accessor.getSessionId().equals(gameRoom.getUser(0))) {
+            gameRoom.setLeftPaddleStatus(data.getPaddleStatus());
+        } else {
+            gameRoom.setRightPaddleStatus(data.getPaddleStatus());
+        }
+    }
+
 
     private void ballUpdate(GameInfomation gameRoom) {
         GameElement element = gameRoom.getElement();
