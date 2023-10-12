@@ -11,6 +11,7 @@ public class GameInfomation {
     private int leftPaddleStatus;
     private int rightPaddleStatus;
     private ScheduledFuture<?> timer;
+    private boolean singleMode;
     public GameInfomation() {
         this.users = new String[2];
         this.gameElement = new GameElement();
@@ -20,6 +21,7 @@ public class GameInfomation {
         this.leftPaddleStatus = 0;
         this.rightPaddleStatus = 0;
         this.timer = null;
+        this.singleMode = false;
     }
     public GameInfomation(String users[], int maxScore, GameElement gameElement, double velocityX, double velocityY, int leftPaddleStatus, int rightPaddleStatus) {
         this.users = users;
@@ -96,5 +98,13 @@ public class GameInfomation {
         if (timer != null) {
             timer.cancel(false);
         }
+    }
+
+    public void setSingleMode(boolean singleMode) {
+        this.singleMode = singleMode;
+    }
+
+    public Boolean getSingleMode() {
+        return singleMode;
     }
 }

@@ -7,6 +7,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.broker.SimpleBrokerMessageHandler;
 import org.springframework.stereotype.Controller;
 
 import java.util.ArrayList;
@@ -25,10 +26,19 @@ public class TestGameController {
         this.messagingTemplate = messagingTemplate;
     }
     private static List<String> list = new ArrayList<>();
-    private static Map<String, List<String>> matchUsers = new HashMap<>();
+//    private static Map<String, List<String>> matchUsers = new HashMap<>();
     private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 
     private static Map<String, GameInfomation> gameRooms = new HashMap<>();
+    @MessageMapping("/SingleMode")
+    public void singlePlay(SimpMessageHeaderAccessor accessor) {
+        System.out.println("single play accessor: " + accessor.getSessionId());
+        List<String> dummyList = new ArrayList<>();
+        dummyList.add(accessor.getSessionId());
+        dummyList.add("ai");
+        matchingSuccess(dummyList);
+    }
+
     @MessageMapping("/matchingJoin")
     public void test(SimpMessageHeaderAccessor accessor) {
         System.out.println("matching join accessor: " + accessor.getSessionId());
@@ -54,11 +64,16 @@ public class TestGameController {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode jsonObject = objectMapper.createObjectNode();
         jsonObject.put("gameRoomId", gameRoomId);
-        matchUsers.put(gameRoomId, userList);
+//        matchUsers.put(gameRoomId, userList);
         String destination = "/topic/matching-success";
         this.gameRooms.put(gameRoomId, new GameInfomation());
         this.gameRooms.get(gameRoomId).setUser(0, userList.get(0));
         this.gameRooms.get(gameRoomId).setUser(1, userList.get(1));
+        if (userList.get(1).equals("ai")) {
+            System.out.println("혼자니?");
+            jsonObject.put("ai", true);
+            this.gameRooms.get(gameRoomId).setSingleMode(true);
+        }
         Runnable positionUpdateTask = () -> {
             positionUpdate(gameRoomId);
         };
@@ -104,8 +119,10 @@ public class TestGameController {
         Ball ball = element.getBall();
 
         updatePaddlePosition(gameRoom.getLeftPaddleStatus(), element.getLeftPaddle());
-        updatePaddlePosition(gameRoom.getRightPaddleStatus(), element.getRightPaddle());
-
+        if (gameRoom.getSingleMode()) {
+            updateAiPaddlePosition(gameRoom.getRightPaddleStatus(), element.getRightPaddle(), ball);
+        } else
+            updatePaddlePosition(gameRoom.getRightPaddleStatus(), element.getRightPaddle());
         ball.setX(ball.getX() + gameRoom.getVelocityX());
         ball.setY(ball.getY() + gameRoom.getVelocityY());
 
@@ -159,6 +176,21 @@ public class TestGameController {
             paddle.setY(paddle.getY() - speed);
         } else if (status == 2 && paddle.getY() < 100 - paddle.getHeight()) {
             paddle.setY(paddle.getY() + speed);
+        }
+    }
+    private void updateAiPaddlePosition(int status, Paddle paddle, Ball ball) {
+        if (ball.getY() + ball.getRadius() < paddle.getY() + paddle.getHeight() / 2) {
+            // 공이 패들의 위쪽에 있으면, 패들을 위로 움직입니다.
+            double speed = 3.0;
+            if (paddle.getY() > 0) {
+                paddle.setY(paddle.getY() - speed);
+            }
+        } else {
+            // 공이 패들의 아래쪽에 있으면, 패들을 아래로 움직입니다.
+            double speed = 3.0;
+            if (paddle.getY() < 100 - paddle.getHeight()) {
+                paddle.setY(paddle.getY() + speed);
+            }
         }
     }
 
