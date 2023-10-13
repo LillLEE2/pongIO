@@ -3,14 +3,17 @@ package com.example.pingpong.websocket;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
+
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.Map;
 
-public class HttpSessionIdHandshakeInterceptor implements HandshakeInterceptor {
-
-    @Override
+@Component
+public class HttpHandshakeInterceptor implements HandshakeInterceptor {
+	@Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,
                                    WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
         if (request instanceof ServletServerHttpRequest) {
@@ -21,8 +24,8 @@ public class HttpSessionIdHandshakeInterceptor implements HandshakeInterceptor {
     }
 
     private static String getNickname(ServletServerHttpRequest request) {
-        HttpSession session = request.getServletRequest().getSession();
-        Object userAttribute = session.getAttribute("user");
+	    HttpSession session = request.getServletRequest().getSession();
+        Object userAttribute = session.getAttribute("nickname");
         if (userAttribute != null) {
             return String.valueOf(userAttribute);
         } else {

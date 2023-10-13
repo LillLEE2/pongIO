@@ -9,12 +9,13 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.Map;
 
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class UserController {
 
     private final UserService userService;
@@ -26,20 +27,13 @@ public class UserController {
     }
 
     @PostMapping("/guest-login")
-    public ResponseEntity<User> createGuestAccount(HttpServletRequest request) {
+    public ResponseEntity<String> createGuestAccount(HttpServletRequest request) {
         User guestUser = userService.createGuestAccount();
-
-        request.getSession().setAttribute("user",guestUser);
-        return ResponseEntity.ok(guestUser);
+        HttpSession session = request.getSession();
+        session.setAttribute("nickname", guestUser.getNickname());
+        return ResponseEntity.ok(guestUser.getNickname());
     }
 
-
-    @RequestMapping("/test")
-    public void test(HttpServletRequest request, HttpServletResponse response) {
-
-        Map<String, Object> user = (Map<String, Object>) request.getAttribute("user");
-        String nickname = user.get("nickname").toString();
-    }
     @GetMapping("/{nickName}")
     public ResponseEntity<User> getUserById(@PathVariable String nickName) {
         return userService.findByNickname(nickName)

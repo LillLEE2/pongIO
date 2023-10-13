@@ -1,8 +1,11 @@
 package com.example.pingpong.user.service;
 
+import com.example.pingpong.global.util.UUIDGenerator;
 import com.example.pingpong.user.model.User;
+import com.example.pingpong.user.model.UserRole;
 import com.example.pingpong.user.model.UserStatus;
 import com.example.pingpong.user.repository.UserRepository;
+import com.example.pingpong.user.validate.UserValidator;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +19,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     public User saveUser(User user) {
+        user.setUserRole(UserRole.USER);
         return userRepository.save(user);
     }
 
@@ -26,28 +30,35 @@ public class UserService {
     public Optional<User> login(String nickname, String password) {
         Optional<User> user = findByNickname(nickname);
         if (user.isPresent() && user.get().getPassword().equals(password)) {
-            user.get().setStatusCode(UserStatus.ONLINE);
+            updateUserStatus(user.get().getNickname(), UserStatus.ONLINE);
             return user;
         }
         return Optional.empty();
     }
 
     public User createGuestAccount() {
-        User guestUser = new User();
-        String guestNickName;
-        do {
-            guestNickName = "GUEST" + new Random().nextInt(100000);
-        } while(userRepository.existsByNickname(guestNickName));
-
-        guestUser.setNickname(guestNickName);
-        guestUser.setPassword(UUID.randomUUID().toString());
-        guestUser.setStatusCode(UserStatus.ONLINE);
-        return userRepository.save(guestUser);
+        return getUser("GUEST", UserRole.GUEST);
     }
 
-    public void setUserSocketId(String nickName, String socketId) {
-        User user = userRepository.findByNickname(nickName).get();
-        user.setSocketId(socketId);
-        userRepository.save(user);
+    public User createAIAccount() {
+        return getUser("AI", UserRole.AI);
+    }
+
+    private User getUser ( String nickname, UserRole role ) {
+        User user = new User();
+        String guestNickName = UUIDGenerator.Generate(nickname);
+        user.setNickname(guestNickName);
+        user.setPassword(UUID.randomUUID().toString());
+        user.setUserStatus(UserStatus.ONLINE);
+        user.setUserRole(role);
+        return userRepository.save(user);
+    }
+
+    public boolean setUserSocketId(String nickName, String socketId) {
+        return ( userRepository.updateUserSocketId(nickName, socketId) == 1 ) ? true : false;
+    }
+
+    public boolean updateUserStatus(String nickname, UserStatus status) {
+        return ( userRepository.updateUserStatus(nickname, status) == 1 ) ? true : false;
     }
 }

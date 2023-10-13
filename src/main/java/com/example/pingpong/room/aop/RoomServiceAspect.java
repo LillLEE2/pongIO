@@ -1,38 +1,43 @@
 package com.example.pingpong.room.aop;
 
-import com.example.pingpong.room.model.GameRoom;
-import com.example.pingpong.room.repository.RoomRepository;
-import com.example.pingpong.room.validate.RoomValidator;
-import com.example.pingpong.user.service.UserService;
-import com.example.pingpong.user.validate.UserValidator;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import com.example.pingpong.room.validate.RoomValidator;
+import com.example.pingpong.user.validate.UserValidator;
 
 @Aspect
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class RoomServiceAspect {
 
     private final UserValidator userValidator;
     private final RoomValidator roomValidator;
-    @Before("execution(* com.example.pingpong.room.service.RoomService.createNewRoom(..)) && args(userNickname,..)")
-    public void beforeCreateNewRoom(String userNickname) {
+
+    private static final String CREATE_NEW_ROOM_POINTCUT = "execution(* com.example.pingpong.room.service.RoomService.createNewRoom(..)) && args(userNickname,..)";
+    private static final String JOIN_GAME_ROOM_POINTCUT = "execution(* com.example.pingpong.room.service.RoomService.joinGameRoom(..)) && args(roomId, userNickname,..)";
+    private static final String EXIT_GAME_ROOM_POINTCUT = "execution(* com.example.pingpong.room.service.RoomService.exitGameRoom(..)) && args(roomId, userNickname,..)";
+
+    @Before(CREATE_NEW_ROOM_POINTCUT)
+    public void beforeCreateNewRoom(String userNickname) throws Throwable {
         userValidator.validateNickname(userNickname);
     }
 
-    @Before(value = "execution(* com.example.pingpong.room.service.RoomService.joinGameRoom(..)) && args(roomId, userNickname,..)", argNames = "roomId,userNickname")
-    public void beforeUserJoinRoom(String roomId, String userNickname) {
-        userValidator.validateNickname(userNickname);
-        roomValidator.validateRoomInfo(roomId);
-        roomValidator.validateRoomUserCount(roomId);
+    @Before(JOIN_GAME_ROOM_POINTCUT)
+    public void beforeUserJoinRoom(String roomId, String userNickname) throws Throwable {
+        validateAnyRoom(roomId, userNickname);
     }
 
-    @Before(value = "execution(* com.example.pingpong.room.service.RoomService.exitGameRoom(..)) && args(roomId, userNickname,..)", argNames = "roomId,userNickname")
-    public void beforeUserExitRoom(String roomId, String userNickname) {
+    @Before(EXIT_GAME_ROOM_POINTCUT)
+    public void beforeUserExitRoom(String roomId, String userNickname) throws Throwable {
+        validateAnyRoom(roomId, userNickname);
+    }
+
+    private void validateAnyRoom ( String roomId, String userNickname ) {
         userValidator.validateNickname(userNickname);
         roomValidator.validateRoomInfo(roomId);
         roomValidator.validateRoomUserCount(roomId);

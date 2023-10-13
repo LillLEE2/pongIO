@@ -4,12 +4,17 @@ package com.example.pingpong.user.model;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
+@EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
 @Table(name = "\"user\"", schema = "public")
 public class User {
@@ -32,7 +37,18 @@ public class User {
     private String email;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status_code")
-    private UserStatus statusCode;
+    @Column(name = "user_status")
+    private UserStatus userStatus;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_role")
+    private UserRole userRole;
+
+    @CreatedDate
+    @Column(name = "create_date", updatable = false, nullable = false)
+    private LocalDateTime createDate;
+
+    @LastModifiedDate
+    @Column(name = "update_date", nullable = false)
+    private LocalDateTime updateDate;
 }
