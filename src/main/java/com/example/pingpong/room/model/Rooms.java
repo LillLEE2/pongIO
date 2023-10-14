@@ -1,7 +1,7 @@
 package com.example.pingpong.room.model;
 
-import com.example.pingpong.game.model.GameMode;
-import com.example.pingpong.game.model.GameSetting;
+import com.example.pingpong.game.dto.GameMode;
+import com.example.pingpong.game.dto.GameSetting;
 import lombok.*;
 
 import javax.persistence.*;

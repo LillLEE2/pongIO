@@ -1,8 +1,8 @@
 package com.example.pingpong.game.service;
 
-import com.example.pingpong.game.model.GameMode;
-import com.example.pingpong.game.model.result.GameResults;
-import com.example.pingpong.game.model.result.GameResultsId;
+import com.example.pingpong.game.dto.GameMode;
+import com.example.pingpong.game.dto.result.GameResults;
+import com.example.pingpong.game.dto.result.GameResultsId;
 import com.example.pingpong.game.repository.GameResultsRepository;
 import com.example.pingpong.global.util.UUIDGenerator;
 import com.example.pingpong.room.model.RoomType;

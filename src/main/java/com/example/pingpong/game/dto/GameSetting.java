@@ -1,4 +1,4 @@
-package com.example.pingpong.game.model;
+package com.example.pingpong.game.dto;
 
 import com.example.pingpong.room.model.Rooms;
 import lombok.AllArgsConstructor;

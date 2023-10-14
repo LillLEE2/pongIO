@@ -1,6 +1,6 @@
 package com.example.pingpong.game.service;
 
-import com.example.pingpong.game.model.GameMode;
+import com.example.pingpong.game.dto.GameMode;
 import com.example.pingpong.user.dto.UserQueue;
 import org.springframework.stereotype.Service;
 

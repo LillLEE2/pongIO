@@ -1,7 +1,7 @@
-package com.example.pingpong.game.model.result;
+package com.example.pingpong.game.dto.result;
 
-import com.example.pingpong.game.model.GameMode;
-import com.example.pingpong.global.util.StringListToJsonConverter;
+import com.example.pingpong.game.dto.GameMode;
+//import com.example.pingpong.global.util.StringListToJsonConverter;
 import com.example.pingpong.room.model.RoomType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

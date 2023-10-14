@@ -1,4 +1,4 @@
-package com.example.pingpong.game.model.result;
+package com.example.pingpong.game.dto.result;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

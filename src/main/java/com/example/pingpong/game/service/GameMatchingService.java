@@ -2,7 +2,7 @@ package com.example.pingpong.game.service;
 
 import com.example.pingpong.game.dto.MatchingResult;
 import com.example.pingpong.global.Global;
-import com.example.pingpong.game.model.GameMode;
+import com.example.pingpong.game.dto.GameMode;
 import com.example.pingpong.room.model.RoomType;
 import com.example.pingpong.room.model.Rooms;
 import com.example.pingpong.room.service.RoomService;

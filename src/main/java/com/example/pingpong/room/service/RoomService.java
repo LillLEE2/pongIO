@@ -2,7 +2,7 @@ package com.example.pingpong.room.service;
 
 import com.example.pingpong.global.util.UUIDGenerator;
 import com.example.pingpong.room.dto.RoomsRequest;
-import com.example.pingpong.game.model.GameMode;
+import com.example.pingpong.game.dto.GameMode;
 import com.example.pingpong.room.model.Rooms;
 import com.example.pingpong.room.model.RoomStatus;
 import com.example.pingpong.room.model.RoomType;

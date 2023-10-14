@@ -1,6 +1,6 @@
 package com.example.pingpong.room.dto;
 
-import com.example.pingpong.game.model.GameMode;
+import com.example.pingpong.game.dto.GameMode;
 import com.example.pingpong.room.model.RoomType;
 import lombok.Getter;
 import lombok.Setter;

@@ -1,6 +1,6 @@
 package com.example.pingpong.global;
 
-import com.example.pingpong.game.model.GameInfomation;
+import com.example.pingpong.game.dto.GameInfomation;
 import com.example.pingpong.user.dto.UserQueue;
 
 import java.util.*;

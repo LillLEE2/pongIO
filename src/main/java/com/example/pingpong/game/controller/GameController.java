@@ -1,13 +1,14 @@
 package com.example.pingpong.game.controller;
 
 import com.example.pingpong.game.dto.MatchingResult;
-import com.example.pingpong.game.model.Ball;
-import com.example.pingpong.game.model.GameElement;
-import com.example.pingpong.game.model.GameInfomation;
-import com.example.pingpong.game.model.Paddle;
+import com.example.pingpong.game.dto.Ball;
+import com.example.pingpong.game.dto.GameElement;
+import com.example.pingpong.game.dto.GameInfomation;
+import com.example.pingpong.game.dto.Paddle;
+import com.example.pingpong.game.service.GameLogicService;
 import com.example.pingpong.game.service.GameMatchingService;
 import com.example.pingpong.global.Global;
-import com.example.pingpong.game.model.GameMode;
+import com.example.pingpong.game.dto.GameMode;
 import com.example.pingpong.room.model.RoomType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,10 +29,11 @@ import java.util.concurrent.TimeUnit;
 
 @Controller
 @AllArgsConstructor
-public class GameMatchingController {
+public class GameController {
 
 	private final SimpMessagingTemplate messagingTemplate;
 	private final GameMatchingService gameMatchingService;
+    private final GameLogicService gameLogicService;
 	private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 	@MessageMapping("/matchingJoin")
 	public void matchingAndJoinRoom( @Payload Map<String, String> payload, SimpMessageHeaderAccessor accessor) throws JsonProcessingException {
