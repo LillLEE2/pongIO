@@ -21,15 +21,16 @@ import java.util.List;
 public class GameResultsService {
 	private final GameResultsRepository gameResultsRepository;
 
-	    public void saveParticipation( List<String> nickNameList, Rooms gameRoom) throws JsonProcessingException {
+	    public GameResultsId saveParticipation( List<String> nickNameList, Rooms gameRoom) throws JsonProcessingException {
 	        String matchingRoomId = UUIDGenerator.Generate("MATCHING");
 		    Integer participantsCount = nickNameList.size();
 
 		    GameResultsId gameResultsId = createGameParticipantsId(matchingRoomId, gameRoom.getRoomId());
 		    GameResults gameResult = createGameResult(gameResultsId, gameRoom.getRoomType(), gameRoom.getGameMode(), participantsCount, nickNameList);
 
-		    gameResultsRepository.save(gameResult);
-	    }
+			GameResults results = gameResultsRepository.save(gameResult);
+			return results.getId();
+		}
 
 	    private GameResultsId createGameParticipantsId( String matchingRoomId, String roomId) {
 	        return new GameResultsId().builder()

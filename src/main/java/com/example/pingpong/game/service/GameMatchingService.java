@@ -1,6 +1,7 @@
 package com.example.pingpong.game.service;
 
 import com.example.pingpong.game.dto.MatchingResult;
+import com.example.pingpong.game.dto.result.GameResultsId;
 import com.example.pingpong.global.Global;
 import com.example.pingpong.game.dto.GameMode;
 import com.example.pingpong.room.model.RoomType;
@@ -36,12 +37,12 @@ public class GameMatchingService {
 		return isMatchingCheckByMode(mode, type, buildUserQueue(accessor));
 	}
 
-	public String joinRooms( MatchingResult matchingResult ) throws JsonProcessingException {
+	public GameResultsId joinRooms( MatchingResult matchingResult ) throws JsonProcessingException {
 		List<String> userList = createUserList(matchingResult);
 		Rooms room = createRooms(matchingResult);
 		setUserStatusCodeInGame(userList);
-		gameResultsService.saveParticipation(userList, room);
-		return room.getRoomId();
+		GameResultsId gameResultsId = gameResultsService.saveParticipation(userList, room);
+		return gameResultsId;
 	}
 
 

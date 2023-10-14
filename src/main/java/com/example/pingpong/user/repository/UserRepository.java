@@ -24,7 +24,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE User u SET u.socketId = :socketId WHERE u.nickname = :nickname AND (u.socketId IS NULL OR u.socketId = '')")
+    @Query("UPDATE User u SET u.socketId = :socketId WHERE u.nickname = :nickname")
     int updateUserSocketId(@Param("nickname") String nickname, @Param("socketId") String socketId);
 
 }

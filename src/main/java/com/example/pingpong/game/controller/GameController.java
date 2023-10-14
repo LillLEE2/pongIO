@@ -5,7 +5,7 @@ import com.example.pingpong.game.dto.Ball;
 import com.example.pingpong.game.dto.GameElement;
 import com.example.pingpong.game.dto.GameInfomation;
 import com.example.pingpong.game.dto.Paddle;
-import com.example.pingpong.game.service.GameLogicService;
+import com.example.pingpong.game.dto.result.GameResultsId;
 import com.example.pingpong.game.service.GameMatchingService;
 import com.example.pingpong.global.Global;
 import com.example.pingpong.game.dto.GameMode;
@@ -33,7 +33,6 @@ public class GameController {
 
 	private final SimpMessagingTemplate messagingTemplate;
 	private final GameMatchingService gameMatchingService;
-    private final GameLogicService gameLogicService;
 	private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 	@MessageMapping("/matchingJoin")
 	public void matchingAndJoinRoom( @Payload Map<String, String> payload, SimpMessageHeaderAccessor accessor) throws JsonProcessingException {
@@ -48,23 +47,23 @@ public class GameController {
 	@SendTo("/topic/matching-success")
     public void matchingSuccess(MatchingResult matchingResult) throws JsonProcessingException {
 		//MATCHING_SUCCESS_DESTINATION
-		String roomId = gameMatchingService.joinRooms(matchingResult);
-		Global.GAME_ROOMS.put(roomId, new GameInfomation());
+        GameResultsId gameResultsId = gameMatchingService.joinRooms(matchingResult);
+        Global.GAME_ROOMS.put(gameResultsId.getRoomId(), new GameInfomation());
 		ObjectMapper objectMapper = new ObjectMapper();
 		ObjectNode jsonObject = objectMapper.createObjectNode();
-		jsonObject.put("gameRoomId", roomId);
+		jsonObject.put("gameRoomId", gameResultsId.getResultId());
 		Runnable positionUpdateTask = () -> {
-            positionUpdate(roomId);
+            positionUpdate(gameResultsId.getRoomId(), gameResultsId.getResultId());
         };
 		long initialDelay = 0;
 		long period = 1000 / 60;
 		ScheduledFuture<?> timer = executorService.scheduleAtFixedRate(positionUpdateTask, initialDelay, period, TimeUnit.MILLISECONDS);
-		Global.GAME_ROOMS.get(roomId).setTimer(timer);
+		Global.GAME_ROOMS.get(gameResultsId.getRoomId()).setTimer(timer);
 		messagingTemplate.convertAndSend(Global.MATCHING_SUCCESS_DESTINATION, jsonObject);
 	}
 
 	@MessageMapping("/positionUpdate")
-    public void positionUpdate(String roomName) {
+    public void positionUpdate(String roomName, String resultId) {
         System.out.println("/position_update/" + roomName);
         GameInfomation gameRoom = Global.GAME_ROOMS.get(roomName);
         ballUpdate(gameRoom);
@@ -72,7 +71,7 @@ public class GameController {
         boolean gameFinished = gameScoreCheck(gameRoom);
         messagingTemplate.convertAndSend("/topic/position_update/" + roomName, gameRoom.getElement());
         if (gameFinished)
-            finishGame(gameRoom, roomName);
+            finishGame(gameRoom, roomName, resultId);
     }
 
 //    @MessageMapping("/paddleMove")
@@ -180,7 +179,7 @@ public class GameController {
         gameRoom.setVelocityY(0.25 * directY);
     }
 
-    private void finishGame(GameInfomation gameRoom, String roomName) {
+    private void finishGame(GameInfomation gameRoom, String roomName, String resultId) {
         if (gameRoom.getTimer() != null) {
             gameRoom.getTimer().cancel(false);
         }
