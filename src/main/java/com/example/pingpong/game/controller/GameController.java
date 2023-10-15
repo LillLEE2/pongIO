@@ -55,6 +55,8 @@ public class GameController {
         Iterator<UserQueue> iterator = matchingResult.getUserQueue().iterator();
         Global.GAME_ROOMS.get(gameResultsId.getRoomId()).setUser(0, iterator.next().getSocketId());
         Global.GAME_ROOMS.get(gameResultsId.getRoomId()).setUser(1, iterator.next().getSocketId());
+        if (matchingResult.getGameMode().getDescription().equals("SOLO"))
+            Global.GAME_ROOMS.get(gameResultsId.getRoomId()).setSingleMode(true);
 		ObjectMapper objectMapper = new ObjectMapper();
 		ObjectNode jsonObject = objectMapper.createObjectNode();
 		jsonObject.put("gameRoomId", gameResultsId.getRoomId());
@@ -102,8 +104,10 @@ public class GameController {
         Ball ball = element.getBall();
 
         updatePaddlePosition(gameRoom.getLeftPaddleStatus(), element.getLeftPaddle());
-        updatePaddlePosition(gameRoom.getRightPaddleStatus(), element.getRightPaddle());
-
+        if (gameRoom.getSingleMode()) {
+            updateAiPaddlePosition(gameRoom.getRightPaddleStatus(), element.getRightPaddle(), ball);
+        } else
+            updatePaddlePosition(gameRoom.getRightPaddleStatus(), element.getRightPaddle());
         ball.setX(ball.getX() + gameRoom.getVelocityX());
         ball.setY(ball.getY() + gameRoom.getVelocityY());
 
@@ -159,6 +163,23 @@ public class GameController {
             paddle.setY(paddle.getY() + speed);
         }
     }
+
+    private void updateAiPaddlePosition(int status, Paddle paddle, Ball ball) {
+        if (ball.getY() + ball.getRadius() < paddle.getY() + paddle.getHeight() / 2) {
+            // 공이 패들의 위쪽에 있으면, 패들을 위로 움직입니다.
+            double speed = 1.5;
+            if (paddle.getY() > 0) {
+                paddle.setY(paddle.getY() - speed);
+            }
+        } else {
+            // 공이 패들의 아래쪽에 있으면, 패들을 아래로 움직입니다.
+            double speed = 1.5;
+            if (paddle.getY() < 100 - paddle.getHeight()) {
+                paddle.setY(paddle.getY() + speed);
+            }
+        }
+    }
+
 
     private boolean gameScoreCheck(GameInfomation gameRoom) {
         Ball ball = gameRoom.getElement().getBall();
