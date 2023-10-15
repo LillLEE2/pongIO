@@ -1,15 +1,11 @@
 package com.example.pingpong.game.controller;
 
-import com.example.pingpong.game.dto.MatchingResult;
-import com.example.pingpong.game.dto.Ball;
-import com.example.pingpong.game.dto.GameElement;
-import com.example.pingpong.game.dto.GameInfomation;
-import com.example.pingpong.game.dto.Paddle;
+import com.example.pingpong.game.dto.*;
 import com.example.pingpong.game.dto.result.GameResultsId;
 import com.example.pingpong.game.service.GameMatchingService;
 import com.example.pingpong.global.Global;
-import com.example.pingpong.game.dto.GameMode;
 import com.example.pingpong.room.model.RoomType;
+import com.example.pingpong.user.dto.UserQueue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -21,6 +17,7 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -35,7 +32,7 @@ public class GameController {
 	private final GameMatchingService gameMatchingService;
 	private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 	@MessageMapping("/matchingJoin")
-	public void matchingAndJoinRoom( @Payload Map<String, String> payload, SimpMessageHeaderAccessor accessor) throws JsonProcessingException {
+	public void matchingAndJoinRoom(@Payload Map<String, String> payload, SimpMessageHeaderAccessor accessor) throws JsonProcessingException {
 		GameMode mode = GameMode.getMode(payload.get("mode"));
 		RoomType type = RoomType.getRoomType(payload.get("type"));
 		MatchingResult matchingResult = gameMatchingService.matchingCheck(mode, type, accessor);
@@ -44,14 +41,23 @@ public class GameController {
 		}
 	}
 
+    @MessageMapping("/cancelMatching")
+    public void cancelMatching(SimpMessageHeaderAccessor accessor) {
+        System.out.println("matching cancle aceessor: " + accessor.getSessionId());
+        gameMatchingService.matchingCancel(accessor);
+    }
+
 	@SendTo("/topic/matching-success")
     public void matchingSuccess(MatchingResult matchingResult) throws JsonProcessingException {
 		//MATCHING_SUCCESS_DESTINATION
         GameResultsId gameResultsId = gameMatchingService.joinRooms(matchingResult);
         Global.GAME_ROOMS.put(gameResultsId.getRoomId(), new GameInfomation());
+        Iterator<UserQueue> iterator = matchingResult.getUserQueue().iterator();
+        Global.GAME_ROOMS.get(gameResultsId.getRoomId()).setUser(0, iterator.next().getSocketId());
+        Global.GAME_ROOMS.get(gameResultsId.getRoomId()).setUser(1, iterator.next().getSocketId());
 		ObjectMapper objectMapper = new ObjectMapper();
 		ObjectNode jsonObject = objectMapper.createObjectNode();
-		jsonObject.put("gameRoomId", gameResultsId.getResultId());
+		jsonObject.put("gameRoomId", gameResultsId.getRoomId());
 		Runnable positionUpdateTask = () -> {
             positionUpdate(gameResultsId.getRoomId(), gameResultsId.getResultId());
         };
@@ -74,18 +80,22 @@ public class GameController {
             finishGame(gameRoom, roomName, resultId);
     }
 
-//    @MessageMapping("/paddleMove")
-//    public void paddleMove(PaddleMoveRequest data) {
-//        GameInformation gameRoom = gameService.getGameRoom(data.getRoomName());
-//        if (gameRoom == null) {
-//            return;
-//        }
-//        if (data.isOwner()) {
-//            gameRoom.setLeftPaddleStatus(data.getPaddleStatus());
-//        } else {
-//            gameRoom.setRightPaddleStatus(data.getPaddleStatus());
-//        }
-//    }
+    @MessageMapping("/paddle_move")
+    public void paddleMove(SimpMessageHeaderAccessor accessor, PaddleMoveData data) {
+        System.out.println("/paddle_move/" + data.getGameRoomId() + " " + accessor.getSessionId());
+        GameInfomation gameRoom = Global.GAME_ROOMS.get(data.getGameRoomId());
+        if (gameRoom == null) {
+            return;
+        }
+
+        if (accessor.getSessionId().equals(gameRoom.getUser(0))) {
+            System.out.println("left paddle move");
+            gameRoom.setLeftPaddleStatus(data.getPaddleStatus());
+        } else {
+            System.out.println("right paddle move");
+            gameRoom.setRightPaddleStatus(data.getPaddleStatus());
+        }
+    }
 
     private void ballUpdate(GameInfomation gameRoom) {
         GameElement element = gameRoom.getElement();
