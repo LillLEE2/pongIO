@@ -64,12 +64,14 @@ public class GameMatchingService {
 				} else {
 					result = new MatchingResult(false, mode, Global.NORMAL_MODE_QUEUE, type);
 				}
+				break;
 			}
 			case SOLO: {
 				ConcurrentLinkedQueue<UserQueue> userQueues = new ConcurrentLinkedQueue<>();
 				userQueues.add(userQueue);
 				userQueues.add(createAiUserQueue());
 				result = new MatchingResult(true, mode, userQueues, type);
+				break;
 			}
 		/*
 			TODO: 추후 처리
