@@ -19,6 +19,7 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -35,6 +36,18 @@ public class GameMatchingService {
 
 	public MatchingResult matchingCheck( GameMode mode, RoomType type, SimpMessageHeaderAccessor accessor ) {
 		return isMatchingCheckByMode(mode, type, buildUserQueue(accessor));
+	}
+
+	public void matchingCancel ( SimpMessageHeaderAccessor accessor ) {
+		String socketId = accessor.getSessionId();
+		Iterator<UserQueue> iterator = Global.NORMAL_MODE_QUEUE.iterator();
+		while ( iterator.hasNext() ) {
+			UserQueue userQueue = iterator.next();
+			if ( userQueue.getSocketId().equals(socketId) ) {
+				iterator.remove();
+				break;
+			}
+		}
 	}
 
 	public GameResultsId joinRooms( MatchingResult matchingResult ) throws JsonProcessingException {
