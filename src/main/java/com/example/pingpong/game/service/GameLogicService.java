@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class GameLogicService {
     private final SimpMessagingTemplate messagingTemplate;
+    private final GameResultsService gameResultsService;
 
     public void positionUpdate(String roomName, String resultId) {
         System.out.println("/position_update/" + roomName);
@@ -155,10 +156,9 @@ public class GameLogicService {
         if (gameRoom.getTimer() != null) {
             gameRoom.getTimer().cancel(false);
         }
-
         System.out.println("game finished");
-        // 여기서 갱신
-//        gameMatchingService.finishGame(roomName, resultId);
+        String winnerSocketId = gameRoom.getUser(gameRoom.getElement().getLeftScore() == gameRoom.getMaxScore() ? 0 : 1);
+        gameResultsService.finishGame(roomName, resultId);
         System.out.println("left score: " + gameRoom.getElement().getLeftScore() + ", right score: " + gameRoom.getElement().getRightScore());
         messagingTemplate.convertAndSend( "/topic/finish_game" + roomName, 0);
     }

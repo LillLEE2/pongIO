@@ -3,10 +3,7 @@ package com.example.pingpong.game.dto.result;
 import com.example.pingpong.game.dto.GameMode;
 //import com.example.pingpong.global.util.StringListToJsonConverter;
 import com.example.pingpong.room.model.RoomType;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -33,15 +30,18 @@ public class GameResults {
     @Column(name = "start_time", nullable = false)
     private Timestamp startTime;
 
+    @Setter
     @Column(name = "end_time")
     private Timestamp endTime;
 
     @Column(name = "participants_count")
     private Integer participantsCount;
 
+    @Setter
     @Column(name = "winner_id")
     private Integer winnerId;
 
+    @Setter
     @Column(name = "winner_score")
     private Integer winnerScore;
 
@@ -51,9 +51,11 @@ public class GameResults {
     @Column(name = "top_score")
     private Integer topScore;
 
+    @Setter
     @Column(name = "low_scorer_id")
     private Integer lowScorerId;
 
+    @Setter
     @Column(name = "low_score")
     private Integer lowScore;
 

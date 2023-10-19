@@ -1,5 +1,9 @@
 package com.example.pingpong.game.service;
 
+import com.example.pingpong.game.dto.GameInfomation;
+import com.example.pingpong.global.Global;
+import com.example.pingpong.user.service.UserService;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.example.pingpong.game.dto.GameMode;
 import com.example.pingpong.game.dto.result.GameResults;
 import com.example.pingpong.game.dto.result.GameResultsId;
@@ -20,7 +24,7 @@ import java.util.List;
 @AllArgsConstructor
 public class GameResultsService {
 	private final GameResultsRepository gameResultsRepository;
-
+	private final UserService userService;
 	    public GameResultsId saveParticipation( List<String> nickNameList, Rooms gameRoom) throws JsonProcessingException {
 	        String matchingRoomId = UUIDGenerator.Generate("MATCHING");
 		    Integer participantsCount = nickNameList.size();
@@ -51,4 +55,34 @@ public class GameResultsService {
 			        .summary(summaryJson)
 	                .build();
 	    }
+
+		public void finishGame(String roomName, String resultId) {
+			//gameMode 별 분리 필요! 우선은 1대1 기준으로 처리
+			ObjectMapper objectMapper = new ObjectMapper();
+			GameInfomation gameRoom = Global.GAME_ROOMS.get(roomName);
+			Integer winnerUserId = userService.getUserIdBySocketId(gameRoom.getWinnerSocketId());
+			Integer loserUserId = userService.getUserIdBySocketId(gameRoom.getLoserSocketId());
+			GameResultsId gameResultsId = GameResultsId.builder()
+					.resultId(resultId)
+					.roomId(roomName)
+					.build();
+			GameResults gameResults = gameResultsRepository.findById(gameResultsId);
+			if (gameResults.getGameType().getDescription().equals("SOLO"))
+				return;
+			List<String> userList;
+			try{
+				userList = objectMapper.readValue(gameResults.getSummary(), new TypeReference<List<String>>() {});
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+				// 에러 처리 추가
+			}
+
+			gameResults.setEndTime(Timestamp.valueOf(LocalDateTime.now()));
+			gameResults.setWinnerScore(gameRoom.getWinnerScore());
+			gameResults.setLowScore(gameRoom.getLoserScore());
+			gameResults.setWinnerId(winnerUserId);
+			gameResults.setLowScorerId(loserUserId);
+			gameResultsRepository.save(gameResults);
+		}
+
 }

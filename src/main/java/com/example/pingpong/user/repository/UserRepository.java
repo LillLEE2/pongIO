@@ -15,6 +15,7 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByNickname(String nickname);
 
+    Integer getUserIdBySocketId(String socketId);
     boolean existsByNickname(String nickname);
 
     @Modifying

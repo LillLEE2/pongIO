@@ -107,4 +107,31 @@ public class GameInfomation {
     public Boolean getSingleMode() {
         return singleMode;
     }
+
+    public String getWinnerSocketId() {
+        if (gameElement.getLeftScore() == maxScore) {
+            return users[0];
+        } else if (gameElement.getRightScore() == maxScore) {
+            return users[1];
+        } else {
+            return null;
+        }
+    }
+    public String getLoserSocketId() {
+        if (gameElement.getLeftScore() == maxScore) {
+            return users[1];
+        } else if (gameElement.getRightScore() == maxScore) {
+            return users[0];
+        } else {
+            return null;
+        }
+    }
+
+    public Integer getWinnerScore() {
+        return Math.max(gameElement.getLeftScore(), gameElement.getRightScore());
+    }
+
+    public Integer getLoserScore() {
+        return Math.min(gameElement.getLeftScore(), gameElement.getRightScore());
+    }
 }

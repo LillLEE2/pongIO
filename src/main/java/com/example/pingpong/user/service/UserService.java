@@ -27,6 +27,10 @@ public class UserService {
         return userRepository.findByNickname(nickname);
     }
 
+    public Integer getUserIdBySocketId(String socketId) {
+        return userRepository.getUserIdBySocketId(socketId);
+    }
+
     public Optional<User> login(String nickname, String password) {
         Optional<User> user = findByNickname(nickname);
         if (user.isPresent() && user.get().getPassword().equals(password)) {
