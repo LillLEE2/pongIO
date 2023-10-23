@@ -1,7 +1,12 @@
 package com.example.pingpong.game.dto;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.concurrent.ScheduledFuture;
 
+@Getter
+@Setter
 public class GameInfomation {
     private String[] users;
     private int maxScore;
@@ -15,7 +20,7 @@ public class GameInfomation {
     public GameInfomation() {
         this.users = new String[2];
         this.gameElement = new GameElement();
-        this.maxScore = 11;
+        this.maxScore = 1;
         this.velocityX = 0.5;
         this.velocityY = 0.25;
         this.leftPaddleStatus = 0;
@@ -39,59 +44,59 @@ public class GameInfomation {
     public void setUser(int index, String user) {
         this.users[index] = user;
     }
-    public int getMaxScore() {
-        return maxScore;
-    }
-    public void setMaxScore(int maxScore) {
-        this.maxScore = maxScore;
-    }
+//    public int getMaxScore() {
+//        return maxScore;
+//    }
+//    public void setMaxScore(int maxScore) {
+//        this.maxScore = maxScore;
+//    }
     public GameElement getElement() {
         return gameElement;
     }
-
-    public void setElement(GameElement element) {
-        this.gameElement = element;
-    }
-
-    public double getVelocityX() {
-        return velocityX;
-    }
-
-    public void setVelocityX(double velocityX) {
-        this.velocityX = velocityX;
-    }
-
-    public double getVelocityY() {
-        return velocityY;
-    }
-
-    public void setVelocityY(double velocityY) {
-        this.velocityY = velocityY;
-    }
-
-    public int getLeftPaddleStatus() {
-        return leftPaddleStatus;
-    }
-
-    public void setLeftPaddleStatus(int leftPaddleStatus) {
-        this.leftPaddleStatus = leftPaddleStatus;
-    }
-
-    public int getRightPaddleStatus() {
-        return rightPaddleStatus;
-    }
-
-    public void setRightPaddleStatus(int rightPaddleStatus) {
-        this.rightPaddleStatus = rightPaddleStatus;
-    }
-
-    public ScheduledFuture<?> getTimer() {
-        return timer;
-    }
-
-    public void setTimer(ScheduledFuture<?> timer) {
-        this.timer = timer;
-    }
+//
+//    public void setElement(GameElement element) {
+//        this.gameElement = element;
+//    }
+//
+//    public double getVelocityX() {
+//        return velocityX;
+//    }
+//
+//    public void setVelocityX(double velocityX) {
+//        this.velocityX = velocityX;
+//    }
+//
+//    public double getVelocityY() {
+//        return velocityY;
+//    }
+//
+//    public void setVelocityY(double velocityY) {
+//        this.velocityY = velocityY;
+//    }
+//
+//    public int getLeftPaddleStatus() {
+//        return leftPaddleStatus;
+//    }
+//
+//    public void setLeftPaddleStatus(int leftPaddleStatus) {
+//        this.leftPaddleStatus = leftPaddleStatus;
+//    }
+//
+//    public int getRightPaddleStatus() {
+//        return rightPaddleStatus;
+//    }
+//
+//    public void setRightPaddleStatus(int rightPaddleStatus) {
+//        this.rightPaddleStatus = rightPaddleStatus;
+//    }
+//
+//    public ScheduledFuture<?> getTimer() {
+//        return timer;
+//    }
+//
+//    public void setTimer(ScheduledFuture<?> timer) {
+//        this.timer = timer;
+//    }
 
     // 타이머를 취소하는 메서드 추가
     public void cancelTimer() {
@@ -99,7 +104,7 @@ public class GameInfomation {
             timer.cancel(false);
         }
     }
-
+//
     public void setSingleMode(boolean singleMode) {
         this.singleMode = singleMode;
     }
@@ -107,7 +112,7 @@ public class GameInfomation {
     public Boolean getSingleMode() {
         return singleMode;
     }
-
+//
     public String getWinnerSocketId() {
         if (gameElement.getLeftScore() == maxScore) {
             return users[0];

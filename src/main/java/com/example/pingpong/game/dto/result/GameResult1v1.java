@@ -26,11 +26,12 @@ public class GameResult1v1 {
     @Column(name = "game_mode", nullable = false)
     private String gameMode;
 
+    //String 의도한게 맞는지?
     @Column(name = "player1_id", nullable = false)
-    private String player1Id;
+    private Integer player1Id;
 
     @Column(name = "player2_id", nullable = false)
-    private String player2Id;
+    private Integer player2Id;
 
     @Column(name = "player1_score", nullable = false)
     private Integer player1Score;
@@ -39,10 +40,10 @@ public class GameResult1v1 {
     private Integer player2Score;
 
     @Column(name = "winning_player_id", nullable = false)
-    private String winningPlayerId;
+    private Integer winningPlayerId;
 
     @Column(name = "losing_player_id", nullable = false)
-    private String losingPlayerId;
+    private Integer losingPlayerId;
 
     @Column(name = "match_duration")
     private Duration matchDuration;

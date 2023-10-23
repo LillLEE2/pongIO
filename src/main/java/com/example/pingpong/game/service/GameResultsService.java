@@ -25,6 +25,7 @@ import java.util.List;
 public class GameResultsService {
 	private final GameResultsRepository gameResultsRepository;
 	private final UserService userService;
+	private final GameResult1v1Service gameResult1v1Service;
 	    public GameResultsId saveParticipation( List<String> nickNameList, Rooms gameRoom) throws JsonProcessingException {
 	        String matchingRoomId = UUIDGenerator.Generate("MATCHING");
 		    Integer participantsCount = nickNameList.size();
@@ -74,6 +75,7 @@ public class GameResultsService {
 				userList = objectMapper.readValue(gameResults.getSummary(), new TypeReference<List<String>>() {});
 			} catch (JsonProcessingException e) {
 				e.printStackTrace();
+				return ;
 				// 에러 처리 추가
 			}
 
@@ -83,6 +85,11 @@ public class GameResultsService {
 			gameResults.setWinnerId(winnerUserId);
 			gameResults.setLowScorerId(loserUserId);
 			gameResultsRepository.save(gameResults);
+			System.out.println("gameType: " + gameResults.getGameType().getDescription() );
+			if (gameResults.getGameType().getDescription().equals("ONE_ON_ONE")) {
+				System.out.println("its one on one " );
+				gameResult1v1Service.saveGameResult1v1(gameResults, userList, gameRoom);
+			}
 		}
 
 }
