@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.thymeleaf.util.StringUtils;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 //connect & disconnect는 내가 처리했다구
@@ -31,16 +32,17 @@ public class GameHandler implements ChannelInterceptor {
     public void postSend(Message message, MessageChannel channel, boolean sent) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
         Map<String, Object> attributes = accessor.getSessionAttributes();
-        String nickname = Optional.ofNullable((String) attributes.get("nickname")).orElseThrow( () -> new IllegalArgumentException("nickname is empty"));
+        String nickname = Optional.ofNullable((String) attributes.get("username")).orElseThrow( () -> new IllegalArgumentException("nickname is empty"));
         String sessionId = accessor.getSessionId();
         StompCommand stompCommand = accessor.getCommand();
 
-        switch ( stompCommand ) {
+        switch (Objects.requireNonNull(stompCommand)) {
             case CONNECT:
                 userService.setUserSocketId(nickname, sessionId);
                 userService.updateUserStatus(nickname, UserStatus.ONLINE);
                 break;
             case DISCONNECT:
+                userService.setUserSocketId(nickname, sessionId);
                 userService.updateUserStatus(nickname, UserStatus.OFFLINE);
                 break;
         }

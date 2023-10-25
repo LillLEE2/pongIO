@@ -3,6 +3,7 @@ package com.example.pingpong.user.controller;
 import com.example.pingpong.user.model.User;
 import com.example.pingpong.user.service.UserService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,8 +28,8 @@ public class UserController {
     }
 
     @PostMapping("/guest-login")
-    public ResponseEntity<String> createGuestAccount(HttpServletRequest request) {
-        User guestUser = userService.createGuestAccount();
+    public ResponseEntity<String> createGuestAccount(HttpServletRequest request, @RequestHeader("X-Guest-ID") String guestId ) {
+        User guestUser = userService.createGuestAccount(guestId);
         HttpSession session = request.getSession();
         session.setAttribute("nickname", guestUser.getNickname());
         return ResponseEntity.ok(guestUser.getNickname());

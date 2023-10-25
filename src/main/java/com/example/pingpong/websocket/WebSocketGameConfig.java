@@ -25,13 +25,12 @@ import java.util.Map;
 @AllArgsConstructor
 public class WebSocketGameConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final HttpHandshakeInterceptor interceptor;
+    private final StompChannelInterceptor stompChannelInterceptor;
     private final GameHandler gameHandler;
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/stomp/test")
                 .setAllowedOriginPatterns(Global.ALLOW_ORIGIN_PATTERNS)
-                .addInterceptors(interceptor)
                 .withSockJS();
     }
 
@@ -43,6 +42,7 @@ public class WebSocketGameConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(gameHandler);
+        registration.interceptors(stompChannelInterceptor, gameHandler);
     }
+
 }

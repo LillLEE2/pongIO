@@ -1,5 +1,6 @@
 package com.example.pingpong.user.service;
 
+import com.example.pingpong.global.Global;
 import com.example.pingpong.global.util.UUIDGenerator;
 import com.example.pingpong.user.model.User;
 import com.example.pingpong.user.model.UserRole;
@@ -7,18 +8,24 @@ import com.example.pingpong.user.model.UserStatus;
 import com.example.pingpong.user.repository.UserRepository;
 import com.example.pingpong.user.validate.UserValidator;
 import lombok.AllArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 
+/** TODO Redis 사용 하는 방식 으로 변경 예정 */
 @Service
 @AllArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
+    private final StringRedisTemplate redisTemplate;
     public User saveUser(User user) {
+        //회원 가입 할때 유저의 계정에 GUEST_ 는 포함될수 없다.
+
         user.setUserRole(UserRole.USER);
         return userRepository.save(user);
     }
@@ -40,7 +47,11 @@ public class UserService {
         return Optional.empty();
     }
 
-    public User createGuestAccount() {
+    public User createGuestAccount(String guestId) {
+        Optional<User> byNickname = userRepository.findByNickname(guestId);
+        if (byNickname.isPresent()) {
+            return byNickname.get();
+        }
         return getUser("GUEST", UserRole.GUEST);
     }
 
