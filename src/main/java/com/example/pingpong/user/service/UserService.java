@@ -16,18 +16,20 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 
-/** TODO Redis 사용 하는 방식 으로 변경 예정 */
 @Service
 @AllArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final StringRedisTemplate redisTemplate;
-    public User saveUser(User user) {
-        //회원 가입 할때 유저의 계정에 GUEST_ 는 포함될수 없다.
-
-        user.setUserRole(UserRole.USER);
-        return userRepository.save(user);
+    public User saveUser(User responseUser) {
+        if (responseUser.getNickname().contains("GUEST_")) {
+            throw new IllegalArgumentException("닉네임에 'GUEST_'를 포함할 수 없습니다.");
+        }
+        if(userRepository.findByNickname(responseUser.getNickname()).isPresent()) {
+            throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");
+        }
+        return userRepository.save(responseUser);
     }
 
     public Optional<User> findByNickname(String nickname) {

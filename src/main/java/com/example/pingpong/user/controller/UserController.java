@@ -43,10 +43,12 @@ public class UserController {
     }
 
     @GetMapping("/exists/{nickName}")
-    public ResponseEntity<Void> doesUserExist(@PathVariable String nickName) {
-        return userService.findByNickname(nickName).isPresent() ?
-                ResponseEntity.ok().build() :
-                ResponseEntity.notFound().build();
+    public ResponseEntity<Boolean> doesUserExist(@PathVariable String nickName) {
+        if (nickName.contains("GUEST_")) {
+            throw new IllegalArgumentException("닉네임에 'GUEST_'를 포함할 수 없습니다.");
+        }
+        boolean present = userService.findByNickname(nickName).isPresent();
+        return ResponseEntity.ok(present);
     }
 
     @PostMapping("/login")

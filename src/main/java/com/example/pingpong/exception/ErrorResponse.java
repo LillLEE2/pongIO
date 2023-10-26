@@ -1,17 +1,15 @@
 package com.example.pingpong.exception;
 
+import lombok.*;
+
+@Getter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ErrorResponse {
-	private String error;
 
-	public ErrorResponse ( String error ) {
-		this.error = error;
-	}
+	private int status;
+	private String message;
+	private long timeStamp;
 
-	public String getError () {
-		return error;
-	}
-
-	public void setError ( String error ) {
-		this.error = error;
-	}
 }

@@ -13,10 +13,13 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidRequestException(IllegalArgumentException e) {
-        ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-        ResponseEntity<ErrorResponse> response = new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        return response;
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e) {
+        return new ResponseEntity<>(
+                ErrorResponse.builder()
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .message(e.getMessage())
+                        .timeStamp(System.currentTimeMillis()).build()
+                , HttpStatus.BAD_REQUEST);
     }
 }
 
