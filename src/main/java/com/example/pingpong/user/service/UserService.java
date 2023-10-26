@@ -49,10 +49,7 @@ public class UserService {
 
     public User createGuestAccount(String guestId) {
         Optional<User> byNickname = userRepository.findByNickname(guestId);
-        if (byNickname.isPresent()) {
-            return byNickname.get();
-        }
-        return getUser("GUEST", UserRole.GUEST);
+	    return byNickname.orElseGet(() -> getUser("GUEST", UserRole.GUEST));
     }
 
     public User createAIAccount() {

@@ -61,7 +61,7 @@ public class GameMatchingService {
 
 	private UserQueue buildUserQueue ( SimpMessageHeaderAccessor accessor ) {
 		String socketId = accessor.getSessionId();
-		String nickname = String.valueOf(accessor.getSessionAttributes().get("nickname"));
+		String nickname = String.valueOf(accessor.getSessionAttributes().get("username"));
 		return UserQueue.builder().nickname(nickname).socketId(socketId).roomId("").build();
 	}
 
