@@ -14,8 +14,8 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
     Optional<User> findByNickname(String nickname);
-
-    Integer getUserIdBySocketId(String socketId);
+    @Query("SELECT u.userPk FROM User u WHERE u.socketId = :socketId")
+    Integer getUserIdBySocketId(@Param("socketId") String socketId);
     boolean existsByNickname(String nickname);
 
     @Modifying

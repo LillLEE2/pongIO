@@ -1,4 +1,4 @@
-package com.example.pingpong.game.dto;
+package com.example.pingpong.game.dto.GameObjects;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,9 +10,11 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Ball {
-    private double x;
-    private double y;
+    private double posX;
+    private double posY;
     private double radius;
+    protected double velocityX;
+    protected double velocityY;
 
 //    public Ball() {
 //        // 기본 생성자

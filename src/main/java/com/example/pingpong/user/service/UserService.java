@@ -37,6 +37,7 @@ public class UserService {
     }
 
     public Integer getUserIdBySocketId(String socketId) {
+        System.out.println("getUserIdBySocketId : " + socketId);
         return userRepository.getUserIdBySocketId(socketId);
     }
 

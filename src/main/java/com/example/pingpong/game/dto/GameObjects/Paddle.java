@@ -1,8 +1,10 @@
-package com.example.pingpong.game.dto;
+package com.example.pingpong.game.dto.GameObjects;
+
+import lombok.AllArgsConstructor;
 
 public class Paddle {
-    private double x;
-    private double y;
+    private double posX;
+    private double posY;
     private double width;
     private double height;
 
@@ -11,26 +13,26 @@ public class Paddle {
     }
 
     public Paddle(double x, double y, double width, double height) {
-        this.x = x;
-        this.y = y;
+        this.posX = x;
+        this.posY = y;
         this.width = width;
         this.height = height;
     }
 
-    public double getX() {
-        return x;
+    public double getPosX() {
+        return posX;
     }
 
-    public void setX(double x) {
-        this.x = x;
+    public void setPosX(double posX) {
+        this.posX = posX;
     }
 
-    public double getY() {
-        return y;
+    public double getPosY() {
+        return posY;
     }
 
-    public void setY(double y) {
-        this.y = y;
+    public void setPosY(double posY) {
+        this.posY = posY;
     }
 
     public double getWidth() {

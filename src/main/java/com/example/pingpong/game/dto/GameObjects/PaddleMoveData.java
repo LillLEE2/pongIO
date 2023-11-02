@@ -1,4 +1,4 @@
-package com.example.pingpong.game.dto;
+package com.example.pingpong.game.dto.GameObjects;
 
 public class PaddleMoveData {
     private String gameRoomId;

@@ -33,6 +33,7 @@ public class GameResult1v1 {
     @Column(name = "player2_id", nullable = false)
     private Integer player2Id;
 
+    //winner 랑 loser 스코어로 저장하면 안될까나?
     @Column(name = "player1_score", nullable = false)
     private Integer player1Score;
 

@@ -1,12 +1,12 @@
 package com.example.pingpong.game.controller;
 
 import com.example.pingpong.game.dto.*;
+import com.example.pingpong.game.dto.GameInformations.GameInformationFactory;
+import com.example.pingpong.game.dto.GameObjects.PaddleMoveData;
 import com.example.pingpong.game.dto.result.GameResultsId;
-import com.example.pingpong.game.service.GameLogicService;
 import com.example.pingpong.game.service.GameMatchingService;
 import com.example.pingpong.global.Global;
 import com.example.pingpong.room.model.RoomType;
-import com.example.pingpong.user.dto.UserQueue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -18,7 +18,6 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -31,7 +30,7 @@ public class GameController {
 
 	private final SimpMessagingTemplate messagingTemplate;
 	private final GameMatchingService gameMatchingService;
-    private final GameLogicService gameLogicService;
+	private final GameInformationFactory gameInformationFactory;
 	private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 	@MessageMapping("/matchingJoin")
 	public void matchingAndJoinRoom(@Payload Map<String, String> payload, SimpMessageHeaderAccessor accessor) throws JsonProcessingException {
@@ -45,7 +44,7 @@ public class GameController {
 
     @MessageMapping("/cancelMatching")
     public void cancelMatching(SimpMessageHeaderAccessor accessor) {
-        System.out.println("matching cancle aceessor: " + accessor.getSessionId());
+        System.out.println("matching cancel accessor: " + accessor.getSessionId());
         gameMatchingService.matchingCancel(accessor);
     }
 
@@ -53,18 +52,11 @@ public class GameController {
     public void matchingSuccess(MatchingResult matchingResult) throws JsonProcessingException {
 		//MATCHING_SUCCESS_DESTINATION
         GameResultsId gameResultsId = gameMatchingService.joinRooms(matchingResult);
-        Global.GAME_ROOMS.put(gameResultsId.getRoomId(), new GameInfomation());
-        Iterator<UserQueue> iterator = matchingResult.getUserQueue().iterator();
-        Global.GAME_ROOMS.get(gameResultsId.getRoomId()).setUser(0, iterator.next().getSocketId());
-        Global.GAME_ROOMS.get(gameResultsId.getRoomId()).setUser(1, iterator.next().getSocketId());
-        if (matchingResult.getGameMode().getDescription().equals("SOLO"))
-            Global.GAME_ROOMS.get(gameResultsId.getRoomId()).setSingleMode(true);
+		Global.GAME_ROOMS.put(gameResultsId.getRoomId(), gameInformationFactory.createGameInformation(matchingResult, messagingTemplate));
 		ObjectMapper objectMapper = new ObjectMapper();
 		ObjectNode jsonObject = objectMapper.createObjectNode();
 		jsonObject.put("gameRoomId", gameResultsId.getRoomId());
-		Runnable positionUpdateTask = () -> {
-            gameLogicService.positionUpdate(gameResultsId.getRoomId(), gameResultsId.getResultId());
-        };
+		Runnable positionUpdateTask = () -> Global.GAME_ROOMS.get(gameResultsId.getRoomId()).positionUpdate(gameResultsId.getRoomId(), gameResultsId.getResultId());
 		long initialDelay = 0;
 		long period = 1000 / 60;
 		ScheduledFuture<?> timer = executorService.scheduleAtFixedRate(positionUpdateTask, initialDelay, period, TimeUnit.MILLISECONDS);
@@ -74,6 +66,6 @@ public class GameController {
 
     @MessageMapping("/paddle_move")
     public void paddleMove(SimpMessageHeaderAccessor accessor, PaddleMoveData data) {
-        gameLogicService.paddleMove(accessor, data);
+		Global.GAME_ROOMS.get(data.getGameRoomId()).paddleMove(accessor, data);
     }
 }
