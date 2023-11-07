@@ -16,4 +16,3 @@ public abstract class GameElement {
     protected ArrayList<Paddle> paddleList;
     protected ArrayList<Ball> ballList;
 }
-

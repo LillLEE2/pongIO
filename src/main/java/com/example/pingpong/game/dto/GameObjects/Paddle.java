@@ -1,7 +1,9 @@
 package com.example.pingpong.game.dto.GameObjects;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 
+@Builder
 public class Paddle {
     private double posX;
     private double posY;

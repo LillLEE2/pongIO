@@ -16,9 +16,9 @@ public class OneOnOneGameElement extends GameElement {
     public OneOnOneGameElement(GameMode gameMode) {
         super(new ArrayList<>(),new ArrayList<>());
         if (gameMode.getDescription().equals("NORMAL")) {
-            Ball ball = new Ball(49, 49, 1, 0.5, 0.25);
-            Paddle paddle = new Paddle(5, 40, 2, 15);
-            Paddle paddle1 = new Paddle(93, 40, 2, 15);
+            Ball ball = Ball.builder().posX(49).posY(49).radius(1).velocityX(0.5).velocityY(0.25).build();
+            Paddle paddle = Paddle.builder().posX(5).posY(40).width(2).height(15).build();
+            Paddle paddle1 = Paddle.builder().posX(93).posY(40).width(2).height(15).build();
             ballList.add(ball);
             paddleList.add(paddle);
             paddleList.add(paddle1);
@@ -27,3 +27,4 @@ public class OneOnOneGameElement extends GameElement {
         }
     }
 }
+
