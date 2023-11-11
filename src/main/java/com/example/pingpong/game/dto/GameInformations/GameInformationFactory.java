@@ -7,16 +7,20 @@ import lombok.AllArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
 @Component
 @AllArgsConstructor
 public class GameInformationFactory {
     private final GameResultsService gameResultsService;
+
     public GameInformation createGameInformation(MatchingResult matchingResult, SimpMessagingTemplate messagingTemplate) {
         switch (matchingResult.getRoomType()) {
             case ONE_ON_ONE:
                 return createOneOnOneGameInformation(matchingResult, messagingTemplate);
-//            case SOLO:
-//                return createSoloGameInformation(matchingResult, messagingTemplate);
+            case SOLO:
+                return createSoloGameInformation(matchingResult, messagingTemplate);
 //            case MULTIPLAYER:
 //                return createMultiplayerGameInformation(matchingResult);
             default:
@@ -33,14 +37,14 @@ public class GameInformationFactory {
         }
     }
 
-//    private GameInformation createSoloGameInformation(MatchingResult matchingResult, SimpMessagingTemplate messagingTemplate) {
-//        switch (matchingResult.getGameMode()) {
-//            case SOLO:
-//                return new SoloSoloGameInformation(matchingResult, messagingTemplate);
-//            case RANKED:
-//                return new SoloRankedGameInformation(matchingResult);
-//            default:
-//                throw new IllegalArgumentException("Invalid game mode: " + matchingResult.getGameMode());
-//        }
-//    }
+    private GameInformation createSoloGameInformation(MatchingResult matchingResult, SimpMessagingTemplate messagingTemplate) {
+        switch (matchingResult.getGameMode()) {
+            case SOLO:
+                return new SoloSoloGameInformation(matchingResult, messagingTemplate, gameResultsService);
+            case RANKED:
+                return new SoloRankedGameInformation(matchingResult, messagingTemplate, gameResultsService);
+            default:
+                throw new IllegalArgumentException("Invalid game mode: " + matchingResult.getGameMode());
+        }
+    }
 }

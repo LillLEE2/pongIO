@@ -11,7 +11,8 @@ public class GameElementFactory {
                 OneOnOneGameElement oneGameElement = new OneOnOneGameElement(matchingResult.getGameMode());
                 return oneGameElement;
             case SOLO:
-                OneOnOneGameElement soloGameElement = new OneOnOneGameElement(matchingResult.getGameMode());
+                SoloGameElement soloGameElement = new SoloGameElement(matchingResult.getGameMode());
+                return soloGameElement;
             default:
                 throw new IllegalArgumentException("Invalid room type: " + matchingResult.getRoomType());
         }

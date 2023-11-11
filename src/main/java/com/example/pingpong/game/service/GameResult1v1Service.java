@@ -38,5 +38,4 @@ public class GameResult1v1Service {
                 .matchDuration(Duration.between(gameResults.getStartTime().toLocalDateTime(), gameResults.getEndTime().toLocalDateTime()))
                 .build();
     }
-
 }

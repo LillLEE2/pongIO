@@ -1,10 +1,8 @@
 package com.example.pingpong.game.dto.GameInformations;
 
 import com.example.pingpong.game.dto.GameElements.OneOnOneGameElement;
-import com.example.pingpong.game.dto.GameObjects.Ball;
-import com.example.pingpong.game.dto.GameObjects.GameRoomIdMessage;
-import com.example.pingpong.game.dto.GameObjects.Paddle;
-import com.example.pingpong.game.dto.GameObjects.PaddleMoveData;
+import com.example.pingpong.game.dto.GameElements.SoloGameElement;
+import com.example.pingpong.game.dto.GameObjects.*;
 import com.example.pingpong.game.dto.MatchingResult;
 import com.example.pingpong.game.service.GameResultsService;
 import com.example.pingpong.user.dto.UserQueue;
@@ -14,32 +12,26 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
-public class OneOnOneNormalGameInformation extends GameInformation {
+public class SoloSoloGameInformation extends GameInformation {
     private int maxScore;
-    private String[] userSocketIds;
+    private String userSocketId;
     private int leftPaddleStatus;
     private int rightPaddleStatus;
-    private OneOnOneGameElement gameElement;
+    private SoloGameElement gameElement;
 
-    OneOnOneNormalGameInformation(MatchingResult matchingResult, SimpMessagingTemplate messagingTemplate, GameResultsService gameResultsService) {
+    public SoloSoloGameInformation(MatchingResult matchingResult, SimpMessagingTemplate messagingTemplate, GameResultsService gameResultsService) {
         super(matchingResult, messagingTemplate, gameResultsService);
         this.maxScore = 2;
-        this.userSocketIds = new String[2];
         settingUserSocketIds(matchingResult.getUserQueue());
         this.leftPaddleStatus = 0;
         this.rightPaddleStatus = 0;
-        this.gameElement = (OneOnOneGameElement) super.getGameElement();
+        this.gameElement = (SoloGameElement) super.getGameElement();
     }
 
     private void settingUserSocketIds(ConcurrentLinkedQueue<UserQueue> userQueue) {
-        this.userSocketIds = new String[2];
         Iterator<UserQueue> iterator = userQueue.iterator();
-        for (int i = 0; i < 2; i++) {
-            this.userSocketIds[i] = iterator.next().getSocketId();
-        }
+        this.userSocketId = iterator.next().getSocketId();
     }
 
     public void positionUpdate(String roomName, String resultId) {
@@ -54,20 +46,14 @@ public class OneOnOneNormalGameInformation extends GameInformation {
 
     public void paddleMove(SimpMessageHeaderAccessor accessor, PaddleMoveData data) {
         System.out.println("/paddle_move/" + data.getGameRoomId() + " " + accessor.getSessionId());
-        if (accessor.getSessionId().equals(userSocketIds[0])) {
-            System.out.println("left paddle move");
-            this.leftPaddleStatus = data.getPaddleStatus();
-        } else {
-            System.out.println("right paddle move");
-            this.rightPaddleStatus = data.getPaddleStatus();
-        }
+        this.leftPaddleStatus = data.getPaddleStatus();
     }
 
     private void ballUpdate() {
         Ball ball = this.gameElement.getBallList().get(0);
 
         updatePaddlePosition(this.leftPaddleStatus, this.gameElement.getPaddleList().get(0));
-        updatePaddlePosition(this.rightPaddleStatus, this.gameElement.getPaddleList().get(1));
+        updateAiPaddlePosition(this.rightPaddleStatus, this.gameElement.getPaddleList().get(1), ball);
         double velocityX = ball.getVelocityX();
         double velocityY = ball.getVelocityY();
 
@@ -125,6 +111,22 @@ public class OneOnOneNormalGameInformation extends GameInformation {
         }
     }
 
+    private void updateAiPaddlePosition(int status, Paddle paddle, Ball ball) {
+        if (ball.getPosY() + ball.getRadius() < paddle.getPosY() + paddle.getHeight() / 2) {
+            // 공이 패들의 위쪽에 있으면, 패들을 위로 움직입니다.
+            double speed = 1.5;
+            if (paddle.getPosY() > 0) {
+                paddle.setPosY(paddle.getPosY() - speed);
+            }
+        } else {
+            // 공이 패들의 아래쪽에 있으면, 패들을 아래로 움직입니다.
+            double speed = 1.5;
+            if (paddle.getPosY() < 100 - paddle.getHeight()) {
+                paddle.setPosY(paddle.getPosY() + speed);
+            }
+        }
+    }
+
     private boolean gameScoreCheck() {
         Ball ball = gameElement.getBallList().get(0);
         Integer leftScore = gameElement.getLeftScore();
@@ -156,76 +158,17 @@ public class OneOnOneNormalGameInformation extends GameInformation {
 
     private void finishGame(String roomName, String resultId) {
         if (this.getTimer() != null) {
-            this.getTimer().cancel(true);
+            this.getTimer().cancel(false);
         }
-        String winnerSocketId = this.userSocketIds[this.gameElement.getLeftScore() == this.maxScore ? 0 : 1];
         gameResultsService.finishGame(roomName, resultId);
         System.out.println("left score: " + this.gameElement.getLeftScore() + ", right score: " + this.gameElement.getRightScore());
         messagingTemplate.convertAndSend("/topic/finish_game/" + roomName, 0);
         System.out.println("game finished");
     }
-
-    @Override
-    public String getWinnerSocketId() {
-        if (gameElement.getLeftScore() == maxScore) {
-            return this.userSocketIds[0];
-        } else if (gameElement.getRightScore() == maxScore) {
-            return this.userSocketIds[1];
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    public String getLoserSocketId() {
-        if (gameElement.getLeftScore() == maxScore) {
-            return this.userSocketIds[1];
-        } else if (gameElement.getRightScore() == maxScore) {
-            return this.userSocketIds[0];
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    public Integer getWinnerScore() {
-        return Math.max(gameElement.getLeftScore(), gameElement.getRightScore());
-    }
-
-    @Override
-    public Integer getLoserScore() {
-        return Math.min(gameElement.getLeftScore(), gameElement.getRightScore());
-    }
-
-
     public void reStart(SimpMessageHeaderAccessor accessor, GameRoomIdMessage data, ScheduledExecutorService executorService) {
-        System.out.println("reStart");
-        if (accessor.getSessionId().equals(userSocketIds[0])) {
-            gameElement.setLeftScore(-1);
-        } else {
-            gameElement.setRightScore(-1);
-        }
-        if (gameElement.getLeftScore() == -1 && gameElement.getRightScore() == -1) {
-            System.out.println("reStart game");
-            String gameRoomId = data.getGameRoomId();
-            messagingTemplate.convertAndSend("/topic/restart_game/" + gameRoomId, 0);
-            gameElement.setLeftScore(0);
-            gameElement.setRightScore(0);
-            resetBallPosition();
-            // 여기서 DB에 있는 resultId를 가져와야함
-            // String gameResultsId = gameResultsService.getGameResultsId(gameRoomId);
-            String gameResultsId = "1123";
-            Runnable positionUpdateTask = () -> positionUpdate(gameRoomId, gameResultsId);
-            long initialDelay = 0;
-            long period = 1000 / 60;
-            ScheduledFuture<?> timer = executorService.scheduleAtFixedRate(positionUpdateTask, initialDelay, period, TimeUnit.MILLISECONDS);
-            //게임 result DB 다시 만들어야함
-        }
-    }
 
-    public void exitUser(SimpMessageHeaderAccessor accessor, GameRoomIdMessage data) {
-        String remainSocketId = accessor.getSessionId().equals(userSocketIds[0]) ? userSocketIds[1] : userSocketIds[0];
-        System.out.println("exit user: " + accessor.getSessionId() + ", remain user: " + remainSocketId);
-        messagingTemplate.convertAndSend("/topic/exit_game/" + data.getGameRoomId(), 0);
+    }
+    public void exitUser(SimpMessageHeaderAccessor accessor, GameRoomIdMessage data){
+        return;
     }
 }

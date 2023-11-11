@@ -2,6 +2,7 @@ package com.example.pingpong.game.dto.GameInformations;
 
 import com.example.pingpong.game.dto.GameElements.GameElement;
 import com.example.pingpong.game.dto.GameElements.GameElementFactory;
+import com.example.pingpong.game.dto.GameObjects.GameRoomIdMessage;
 import com.example.pingpong.game.dto.GameObjects.PaddleMoveData;
 import com.example.pingpong.game.dto.MatchingResult;
 import com.example.pingpong.game.service.GameResultsService;
@@ -12,6 +13,7 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
 @Getter
@@ -34,6 +36,8 @@ public abstract class GameInformation {
     public abstract void positionUpdate(String roomName, String resultId);
     public abstract void paddleMove(SimpMessageHeaderAccessor accessor, PaddleMoveData data);
 
+    public abstract void reStart(SimpMessageHeaderAccessor accessor, GameRoomIdMessage data, ScheduledExecutorService executorService);
+    public abstract void exitUser(SimpMessageHeaderAccessor accessor, GameRoomIdMessage data);
     public Integer getWinnerScore() {
         return 0;
     }
@@ -41,8 +45,5 @@ public abstract class GameInformation {
         return 0;
     }
     public String getWinnerSocketId() { return null; }
-    public String getLoserSocketId() {
-        return null;
-    }
-
+    public String getLoserSocketId() { return null; }
 }

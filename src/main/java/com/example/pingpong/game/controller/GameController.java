@@ -2,6 +2,7 @@ package com.example.pingpong.game.controller;
 
 import com.example.pingpong.game.dto.*;
 import com.example.pingpong.game.dto.GameInformations.GameInformationFactory;
+import com.example.pingpong.game.dto.GameObjects.GameRoomIdMessage;
 import com.example.pingpong.game.dto.GameObjects.PaddleMoveData;
 import com.example.pingpong.game.dto.result.GameResultsId;
 import com.example.pingpong.game.service.GameMatchingService;
@@ -56,16 +57,31 @@ public class GameController {
 		ObjectMapper objectMapper = new ObjectMapper();
 		ObjectNode jsonObject = objectMapper.createObjectNode();
 		jsonObject.put("gameRoomId", gameResultsId.getRoomId());
+		messagingTemplate.convertAndSend(Global.MATCHING_SUCCESS_DESTINATION, jsonObject);
 		Runnable positionUpdateTask = () -> Global.GAME_ROOMS.get(gameResultsId.getRoomId()).positionUpdate(gameResultsId.getRoomId(), gameResultsId.getResultId());
 		long initialDelay = 0;
 		long period = 1000 / 60;
 		ScheduledFuture<?> timer = executorService.scheduleAtFixedRate(positionUpdateTask, initialDelay, period, TimeUnit.MILLISECONDS);
 		Global.GAME_ROOMS.get(gameResultsId.getRoomId()).setTimer(timer);
-		messagingTemplate.convertAndSend(Global.MATCHING_SUCCESS_DESTINATION, jsonObject);
 	}
 
     @MessageMapping("/paddle_move")
     public void paddleMove(SimpMessageHeaderAccessor accessor, PaddleMoveData data) {
 		Global.GAME_ROOMS.get(data.getGameRoomId()).paddleMove(accessor, data);
     }
+
+	@MessageMapping("/game_room_exit")
+	public void gameRoomExit(SimpMessageHeaderAccessor accessor, GameRoomIdMessage data) {
+		String gameRoomId = data.getGameRoomId();
+		System.out.println("/game_room_exit/" + gameRoomId);
+		Global.GAME_ROOMS.get(gameRoomId).exitUser(accessor, data);
+		Global.GAME_ROOMS.remove(gameRoomId);
+	}
+
+	@MessageMapping("/game_restart")
+	public void gameReStart(SimpMessageHeaderAccessor accessor, GameRoomIdMessage data) {
+		String gameRoomId = data.getGameRoomId();
+		System.out.println("/game_restart/" + gameRoomId);
+		Global.GAME_ROOMS.get(gameRoomId).reStart(accessor, data, executorService);
+	}
 }
