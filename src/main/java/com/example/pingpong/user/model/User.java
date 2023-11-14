@@ -1,9 +1,7 @@
 package com.example.pingpong.user.model;
 
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -13,9 +11,11 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Builder
 @Setter
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "\"user\"", schema = "public")
 public class User {
 

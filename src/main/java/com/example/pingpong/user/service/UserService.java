@@ -2,6 +2,7 @@ package com.example.pingpong.user.service;
 
 import com.example.pingpong.global.Global;
 import com.example.pingpong.global.util.UUIDGenerator;
+import com.example.pingpong.user.controller.SignInRequest;
 import com.example.pingpong.user.model.User;
 import com.example.pingpong.user.model.UserRole;
 import com.example.pingpong.user.model.UserStatus;
@@ -22,14 +23,23 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final StringRedisTemplate redisTemplate;
-    public User saveUser(User responseUser) {
-        if (responseUser.getNickname().contains("GUEST_")) {
+    public User authenticateUser(SignInRequest signInRequest) {
+        String nickname = signInRequest.getNickname();
+        if (nickname.contains("GUEST_")) {
             throw new IllegalArgumentException("닉네임에 'GUEST_'를 포함할 수 없습니다.");
         }
-        if(userRepository.findByNickname(responseUser.getNickname()).isPresent()) {
+        if(userRepository.findByNickname(nickname).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");
         }
-        return userRepository.save(responseUser);
+        String password = signInRequest.getPassword();
+        String email = signInRequest.getEmail();
+        User user = User.builder().nickname(nickname)
+                .userRole(UserRole.USER)
+                .password(password)
+                .email(email)
+                .userStatus(UserStatus.ONLINE)
+            .build();
+        return userRepository.save(user);
     }
 
     public Optional<User> findByNickname(String nickname) {

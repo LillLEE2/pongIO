@@ -21,10 +21,16 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        User createdUser = userService.saveUser(user);
-        return ResponseEntity.ok(createdUser);
+    @PostMapping("/signin")
+    public ResponseEntity<?> signInUser(@RequestBody SignInRequest signInRequest) {
+        try {
+            User user = userService.authenticateUser(signInRequest);
+            return ResponseEntity.ok(user);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("An error occurred");
+        }
     }
 
     @PostMapping("/guest-login")
