@@ -3,42 +3,44 @@ package com.example.pingpong.user.controller;
 import com.example.pingpong.user.model.User;
 import com.example.pingpong.user.service.UserService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.Map;
 
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/users")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class UserController {
 
     private final UserService userService;
 
-    @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
-        User createdUser = userService.saveUser(user);
-        return ResponseEntity.ok(createdUser);
+    @PostMapping("/signin")
+    public ResponseEntity<?> signInUser(@RequestBody SignInRequest signInRequest) {
+        try {
+            User user = userService.authenticateUser(signInRequest);
+            return ResponseEntity.ok(user);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("An error occurred");
+        }
     }
 
     @PostMapping("/guest-login")
-    public ResponseEntity<User> createGuestAccount(HttpServletRequest request) {
-        User guestUser = userService.createGuestAccount();
-
-        request.getSession().setAttribute("user",guestUser);
-        return ResponseEntity.ok(guestUser);
+    public ResponseEntity<String> createGuestAccount(HttpServletRequest request, @RequestHeader("X-Guest-ID") String guestId ) {
+        User guestUser = userService.createGuestAccount(guestId);
+        HttpSession session = request.getSession();
+        session.setAttribute("nickname", guestUser.getNickname());
+        return ResponseEntity.ok(guestUser.getNickname());
     }
 
-
-    @RequestMapping("/test")
-    public void test(HttpServletRequest request, HttpServletResponse response) {
-
-        Map<String, Object> user = (Map<String, Object>) request.getAttribute("user");
-        String nickname = user.get("nickname").toString();
-    }
     @GetMapping("/{nickName}")
     public ResponseEntity<User> getUserById(@PathVariable String nickName) {
         return userService.findByNickname(nickName)
@@ -47,10 +49,12 @@ public class UserController {
     }
 
     @GetMapping("/exists/{nickName}")
-    public ResponseEntity<Void> doesUserExist(@PathVariable String nickName) {
-        return userService.findByNickname(nickName).isPresent() ?
-                ResponseEntity.ok().build() :
-                ResponseEntity.notFound().build();
+    public ResponseEntity<Boolean> doesUserExist(@PathVariable String nickName) {
+        if (nickName.contains("GUEST_")) {
+            throw new IllegalArgumentException("닉네임에 'GUEST_'를 포함할 수 없습니다.");
+        }
+        boolean present = userService.findByNickname(nickName).isPresent();
+        return ResponseEntity.ok(present);
     }
 
     @PostMapping("/login")

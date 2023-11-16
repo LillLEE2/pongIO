@@ -1,22 +1,22 @@
 package com.example.pingpong.room.model;
 
+import com.example.pingpong.game.dto.GameMode;
+import com.example.pingpong.game.dto.GameSetting;
 import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "game_rooms")
+@Table(name = "rooms")
 @Getter
 @ToString
+@Builder
 @NoArgsConstructor(force = true)
-public class GameRoom {
+@AllArgsConstructor
+public class Rooms {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "pk")
-    private Long pk;
-
     @Column(name = "room_id", nullable = false, unique = true)
     private String roomId;
 
@@ -27,65 +27,44 @@ public class GameRoom {
     private String roomOwnerNickname;
 
     @Enumerated(EnumType.STRING)
+    @Setter
     @Column(name = "game_mode")
     private GameMode gameMode;
 
     @Enumerated(EnumType.STRING)
+    @Setter
     @Column(name = "room_type")
     private RoomType roomType;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "room_status")
+    @Setter
     private RoomStatus roomStatus;
 
     @Column(name = "max_players")
+    @Setter
     private Integer maxPlayers;
 
     @Column(name = "cur_players_cnt")
     private Integer curPlayersCnt = 1;
 
     @Column(name = "is_private")
+    @Setter
     private Boolean isPrivate;
 
     @Column(name = "started_dt")
+    @Setter
     private LocalDateTime startedDateTime;
 
     @Column(name = "ended_dt")
+    @Setter
     private LocalDateTime endedDateTime;
 
-    private GameRoom(Builder builder) {
-        this.roomId = builder.roomId;
-        this.roomName = builder.roomName;
-        this.roomOwnerNickname = builder.roomOwnerNickname;
-    }
+    @OneToOne(mappedBy = "gameRoom", cascade = CascadeType.ALL)
+    private GameSetting gameSetting;
 
     public void setCurPlayersCnt(int curPlayersCnt) {
         this.curPlayersCnt = curPlayersCnt;
-    }
-
-    public static class Builder {
-        private String roomId;
-        private String roomName;
-        private String roomOwnerNickname;
-
-        public Builder roomId(String roomId) {
-            this.roomId = roomId;
-            return this;
-        }
-
-        public Builder roomName(String roomName) {
-            this.roomName = roomName;
-            return this;
-        }
-
-        public Builder roomOwnerNickname(String roomOwnerNickname) {
-            this.roomOwnerNickname = roomOwnerNickname;
-            return this;
-        }
-
-        public GameRoom build() {
-            return new GameRoom(this);
-        }
     }
 
 }

@@ -4,8 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum RoomType {
-    ONE_ON_ONE("1대1방"),
-    MULTIPLAYER("다수방");
+    ONE_ON_ONE("ONE_ON_ONE"),
+    SOLO("SOLO"),
+    MULTIPLAYER("MULTIPLAYER");
 
     private final String description;
 
@@ -13,4 +14,7 @@ public enum RoomType {
         this.description = description;
     }
 
+    public static RoomType getRoomType(String type) {
+        return RoomType.valueOf(type);
+    }
 }
