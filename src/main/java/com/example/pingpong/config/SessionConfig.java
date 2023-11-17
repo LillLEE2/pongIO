@@ -1,4 +1,4 @@
-package com.example.pingpong.websocket;
+package com.example.pingpong.config;
 
 
 import org.springframework.context.annotation.Configuration;
