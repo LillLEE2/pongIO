@@ -1,11 +1,8 @@
-package com.example.pingpong.websocket;
+package com.example.pingpong.handler;
 
 import com.example.pingpong.user.model.UserStatus;
-import com.example.pingpong.user.repository.UserRepository;
 import com.example.pingpong.user.service.UserService;
-import io.netty.util.internal.StringUtil;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.Message;
@@ -14,7 +11,6 @@ import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.util.StringUtils;
 
 import java.util.Map;
 import java.util.Objects;
