@@ -1,9 +1,11 @@
 package com.example.pingpong.game.service;
 
+import com.example.pingpong.game.dto.MatchingRequest;
 import com.example.pingpong.game.dto.MatchingResult;
 import com.example.pingpong.game.dto.result.GameResultsId;
 import com.example.pingpong.global.Global;
 import com.example.pingpong.game.dto.GameMode;
+import com.example.pingpong.manager.MatchingManager;
 import com.example.pingpong.room.model.RoomType;
 import com.example.pingpong.room.model.Rooms;
 import com.example.pingpong.room.service.RoomService;
@@ -35,7 +37,14 @@ public class GameMatchingService {
 	private final GameResultsService gameResultsService;
 
 	public MatchingResult matchingCheck( GameMode mode, RoomType type, SimpMessageHeaderAccessor accessor ) {
-		return isMatchingCheckByMode(mode, type, buildUserQueue(accessor));
+		MatchingManager manager = new MatchingManager(this);
+		MatchingRequest matchingRequest = MatchingRequest.builder()
+				.roomType(type)
+				.userQueue(buildUserQueue(accessor))
+				.gameMode(mode)
+				.build();
+
+		return manager.createMatchingResult(matchingRequest);
 	}
 
 	public void matchingCancel ( SimpMessageHeaderAccessor accessor ) {
@@ -65,39 +74,7 @@ public class GameMatchingService {
 		return UserQueue.builder().nickname(nickname).socketId(socketId).roomId("").build();
 	}
 
-	private MatchingResult isMatchingCheckByMode ( GameMode mode, RoomType type, UserQueue userQueue ) {
-		MatchingResult result = null;
-		switch ( mode ) {
-			case NORMAL: {
-				Global.NORMAL_MODE_QUEUE.add(userQueue);
-				if (Global.NORMAL_MODE_QUEUE.size() == 2) {
-					ConcurrentLinkedQueue<UserQueue> queue = new ConcurrentLinkedQueue<>(Global.NORMAL_MODE_QUEUE);
-					Global.NORMAL_MODE_QUEUE.clear();
-					result = new MatchingResult(true, mode, queue, type);
-				} else {
-					result = new MatchingResult(false, mode, Global.NORMAL_MODE_QUEUE, type);
-				}
-				break;
-			}
-			case SOLO: {
-				ConcurrentLinkedQueue<UserQueue> userQueues = new ConcurrentLinkedQueue<>();
-				userQueues.add(userQueue);
-				userQueues.add(createAiUserQueue());
-				result = new MatchingResult(true, mode, userQueues, type);
-				break;
-			}
-		/*
-			TODO: 추후 처리
-			case SPEED: break;
-			case RANKED: break;
-			default:
-	     */
-		}
-		userService.updateUserStatus(userQueue.getNickname(), UserStatus.PENDING);
-		return result;
-	}
-
-	private UserQueue createAiUserQueue () {
+	public UserQueue createAiUserQueue () {
 		User aiUser = userService.createAIAccount();
 		return UserQueue.builder().nickname(aiUser.getNickname()).build();
 	}
