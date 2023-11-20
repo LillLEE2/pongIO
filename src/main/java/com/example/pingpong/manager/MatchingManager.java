@@ -1,50 +1,42 @@
 package com.example.pingpong.manager;
 
 
+import com.example.pingpong.game.dto.GameMode;
+import com.example.pingpong.game.dto.MatchingRequest;
 import com.example.pingpong.game.dto.MatchingResult;
+import com.example.pingpong.game.service.GameMatchingService;
+import com.example.pingpong.global.Global;
+import com.example.pingpong.manager.matching.GameMatchingStrategy;
+import com.example.pingpong.manager.matching.mode.NormalMatchingStrategy;
+import com.example.pingpong.manager.matching.mode.RankedMatchingStrategy;
+import com.example.pingpong.manager.matching.mode.SoloMatchingStrategy;
+import com.example.pingpong.manager.matching.mode.SpeedMatchingStrategy;
 import com.example.pingpong.room.model.RoomType;
+import com.example.pingpong.user.dto.UserQueue;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Function;
 
 @Service
 public class MatchingManager {
-	private final Map<RoomType, Function<Map<String, Objects>, MatchingResult>> generator;
-	private final Object lock;
 
-	public MatchingManager () {
-		this.generator = new HashMap<>();
-		generator.put(RoomType.ONE_ON_ONE, this::createOneToOne);
-		generator.put(RoomType.SOLO, this::createSolo);
-		generator.put(RoomType.MULTIPLAYER, this::createMulti);
-		this.lock = new Object();
+	private final Map<GameMode, GameMatchingStrategy> strategies = new HashMap<>();
+
+	public MatchingManager(GameMatchingService gameMatchingService) {
+		strategies.put(GameMode.SOLO, new SoloMatchingStrategy(gameMatchingService));
+		strategies.put(GameMode.NORMAL, new NormalMatchingStrategy());
+		strategies.put(GameMode.RANKED, new RankedMatchingStrategy());
+		strategies.put(GameMode.SPEED, new SpeedMatchingStrategy());
 	}
 
-	/**
-	 * 타입별 매칭 결과 Object 생성
-	 * @param type
-	 * @param map
-	 * @return
-	 */
-	public MatchingResult createMatchingResult(RoomType type, Map<String, Objects> map) {
-		synchronized (lock) {
-			Function<Map<String, Objects>, MatchingResult> resultFunction = generator.get(type);
-			if ( resultFunction == null ) throw new IllegalArgumentException("check");
-			MatchingResult apply = resultFunction.apply(map);
-			return apply;
+	public final MatchingResult createMatchingResult(MatchingRequest request) {
+		GameMatchingStrategy strategy = strategies.get(request.getGameMode());
+		if (strategy == null) {
+			throw new IllegalArgumentException("Unsupported game mode");
 		}
-	}
-
-	private MatchingResult createSolo(Map<String, Objects> map) {
-		return null;
-	}
-	private MatchingResult createOneToOne(Map<String, Objects> map) {
-		return null;
-	}
-	private MatchingResult createMulti(Map<String, Objects> map) {
-		return null;
+		return strategy.match(request);
 	}
 }
