@@ -16,8 +16,10 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -27,14 +29,21 @@ public class RoomService {
     private final UserRepository userRepository;
     private final UserService userService;
 
-    public List<Rooms> findAllRooms() {
-        return roomRepository.findAll();
+    public List<RoomsRequest> findAllRooms() {
+        List<RoomsRequest> roomsRequestList = roomRepository.findAllByIsPrivate(true, RoomStatus.WAIT).stream().map(
+                rooms -> RoomsRequest.builder()
+                        .roomId(rooms.getRoomId())
+                        .roomName(rooms.getRoomName())
+                        .ownerNickname(rooms.getRoomOwnerNickname())
+                        .build()
+                ).collect(Collectors.toList());
+        return roomsRequestList;
     }
 
     public Rooms createNewRoom( String userNickname, GameMode gameMode, RoomType roomType ) {
         String roomId = UUIDGenerator.Generate("ROOM");
         String roomName = userNickname + "'s room";
-        Rooms room = buildRooms(userNickname, roomId, roomName);
+        Rooms room = buildRooms(userNickname, roomId, roomName, roomType);
         userService.updateUserStatus(userNickname, UserStatus.PENDING);
         return roomRepository.save(room);
     }
@@ -86,11 +95,13 @@ public class RoomService {
         return roomRepository.save(Rooms);
     }
 
-    private Rooms buildRooms(String userNickname, String roomId, String roomName) {
+    private Rooms buildRooms(String userNickname, String roomId, String roomName, RoomType roomType) {
         return Rooms.builder()
                 .roomId(roomId)
                 .roomName(roomName)
                 .roomOwnerNickname(userNickname)
+                .roomStatus(RoomStatus.WAIT)
+                .roomType(roomType)
                 .build();
     }
 }

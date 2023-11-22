@@ -1,28 +1,39 @@
 package com.example.pingpong.room.controller;
 
 import com.example.pingpong.room.dto.RoomsRequest;
+import com.example.pingpong.room.model.RoomType;
 import com.example.pingpong.room.model.Rooms;
 import com.example.pingpong.room.service.RoomService;
 import com.example.pingpong.user.model.User;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/room")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
 public class RoomController {
 
     private final RoomService roomService;
-    @PostMapping("/create/{userNickname}")
-    public ResponseEntity<Rooms> createRoom(@PathVariable String userNickname) {
+    @PostMapping("/create/{userNickname}/{roomType}")
+    public ResponseEntity<RoomsRequest> createRoom(@PathVariable String userNickname, @PathVariable RoomType roomType) {
         try {
-            /** TODO: 생성 뒤에 들어가는 데이터 추가. */
-            Rooms newRoom = roomService.createNewRoom(userNickname, null, null);
-            return new ResponseEntity<>(newRoom, HttpStatus.CREATED);
+            Rooms newRoom = roomService.createNewRoom(userNickname, null, roomType);
+            RoomsRequest roomsRequest = RoomsRequest.builder().roomType(newRoom.getRoomType()).roomId(newRoom.getRoomId())
+                    .ownerNickname(newRoom.getRoomOwnerNickname()).maxPlayers(newRoom.getMaxPlayers())
+                    .gameMode(newRoom.getGameMode()).roomName(newRoom.getRoomName()).build();
+
+            return new ResponseEntity<>(roomsRequest, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             throw e;
         } catch (Exception e) {
@@ -31,8 +42,8 @@ public class RoomController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<List<Rooms>> getAllRooms() {
-        List<Rooms> Rooms = roomService.findAllRooms();
+    public ResponseEntity<List<RoomsRequest>> getAllRooms() {
+        List<RoomsRequest> Rooms = roomService.findAllRooms();
         return ResponseEntity.ok(Rooms);
     }
 
@@ -61,5 +72,4 @@ public class RoomController {
         Rooms Rooms = roomService.updateRooms(roomId, userNickname, updateRequest);
         return ResponseEntity.ok(Rooms);
     }
-
 }
