@@ -1,7 +1,9 @@
 package com.example.pingpong.game.dto.GameInformations;
 
-import com.example.pingpong.game.dto.GameElements.SoloGameElement;
+import com.example.pingpong.game.dto.GameElements.GameElement;
 import com.example.pingpong.game.dto.GameObjects.*;
+import com.example.pingpong.game.dto.GameObjects.sendDataDTO.GameRoomIdMessage;
+import com.example.pingpong.game.dto.GameObjects.sendDataDTO.PaddleMoveData;
 import com.example.pingpong.game.dto.MatchingResult;
 import com.example.pingpong.game.service.GameResultsService;
 import com.example.pingpong.user.dto.UserQueue;
@@ -15,13 +17,14 @@ import java.util.concurrent.ScheduledExecutorService;
 public class SoloRankedGameInformation extends GameInformation {
     private String userSocketId;
     private int leftPaddleStatus;
-    private SoloGameElement gameElement;
+    private GameElement gameElement;
 
     public SoloRankedGameInformation(MatchingResult matchingResult, SimpMessagingTemplate messagingTemplate, GameResultsService gameResultsService) {
         super(matchingResult, messagingTemplate, gameResultsService);
         settingUserSocketIds(matchingResult.getUserQueue());
         this.leftPaddleStatus = 0;
-        this.gameElement = (SoloGameElement) super.getGameElement();
+        this.gameElement = new GameElement();
+//        this.gameElement = super.getGameElement();
     }
 
     private void settingUserSocketIds(ConcurrentLinkedQueue<UserQueue> userQueue) {
@@ -39,10 +42,10 @@ public class SoloRankedGameInformation extends GameInformation {
     }
 
     private void ballUpdate() {
-        updatePaddlePosition(this.leftPaddleStatus, this.gameElement.getPaddleList().get(0));
+        this.gameElement.getPaddleList().get(0).update();
 
         for (Ball ball : this.gameElement.getBallList()) {
-            ball.update(this.gameElement.getScore());
+            ball.update(this.gameElement.getScore().getRankScore());
         }
     }
 
@@ -58,40 +61,13 @@ public class SoloRankedGameInformation extends GameInformation {
                     break; // 볼이 한 번에 하나의 아이템만 획득하도록
                 }
             }
-
-            // 천장과 바닥 충돌 확인
-            if (ball.getPosY() - ball.getRadius() < 0) {
-                ball.setPosY(ball.getRadius());
-                ball.setVelocityY(-ball.getVelocityY());
-            } else if (ball.getPosY() + ball.getRadius() > 100) {
-                ball.setPosY(100 - ball.getRadius());
-                ball.setVelocityY(-ball.getVelocityY());
-            }
-
-            // 패들과 공의 충돌 확인
-            if (ball.getPosX() - ball.getRadius() < leftPaddle.getPosX() + leftPaddle.getWidth() &&
-                    ball.getPosX() + ball.getRadius() > leftPaddle.getPosX() &&
-                    ball.getPosY() + ball.getRadius() >= leftPaddle.getPosY() &&
-                    ball.getPosY() - ball.getRadius() <= leftPaddle.getPosY() + leftPaddle.getHeight()) {
-                double deltaY = ball.getPosY() - (leftPaddle.getPosY() + leftPaddle.getHeight() / 2);
-                if (ball.getPosX() + ball.getRadius() > leftPaddle.getPosX() + leftPaddle.getWidth() / 2) {
-                    ball.setVelocityX(-ball.getVelocityX());
-                    this.gameElement.setScore(this.gameElement.getScore() + 1);
-                }
-                ball.setVelocityY(deltaY * 0.2);
-            }
-
-            // 오른쪽 벽과 공의 충돌 확인
-            if (ball.getPosX() + ball.getRadius() > 100) {
-                ball.setPosX(100 - ball.getRadius());
-                ball.setVelocityX(-ball.getVelocityX());
-            }
+            ball.collision(gameElement, leftPaddle);
         }
     }
 
     private boolean gameScoreCheck() {
 //        Ball ball = gameElement.getBallList().get(0);
-        Integer score = gameElement.getScore();
+        Integer score = gameElement.getScore().getRankScore();
         Integer tempScore = score;
         for (Ball ball : this.gameElement.getBallList()) {
             tempScore -= 5;
@@ -101,7 +77,7 @@ public class SoloRankedGameInformation extends GameInformation {
         }
         if (tempScore > 0) {
             gameElement.addBall();
-            addRandomItem();
+            gameElement.addRandomPositionItem();
         }
         return false;
     }
@@ -123,13 +99,6 @@ public class SoloRankedGameInformation extends GameInformation {
     private boolean isBallCollidingWithItem(Ball ball, Item item) {
         double distance = Math.sqrt(Math.pow(ball.getPosX() - item.getPosX(), 2) + Math.pow(ball.getPosY() - item.getPosY(), 2));
         return distance <= ball.getRadius() + item.getRadius();
-    }
-
-    private void addRandomItem() {
-        double randomX = 10 + Math.random() * (100 - 10);
-        double randomY = Math.random() * 100;
-        Item item = new Item(randomX, randomY);
-        this.gameElement.getItemList().add(item);
     }
 
     private void finishGame(String roomName, String resultId) {

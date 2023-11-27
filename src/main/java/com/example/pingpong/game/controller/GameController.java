@@ -2,8 +2,8 @@ package com.example.pingpong.game.controller;
 
 import com.example.pingpong.game.dto.*;
 import com.example.pingpong.game.dto.GameInformations.GameInformationFactory;
-import com.example.pingpong.game.dto.GameObjects.GameRoomIdMessage;
-import com.example.pingpong.game.dto.GameObjects.PaddleMoveData;
+import com.example.pingpong.game.dto.GameObjects.sendDataDTO.GameRoomIdMessage;
+import com.example.pingpong.game.dto.GameObjects.sendDataDTO.PaddleMoveData;
 import com.example.pingpong.game.dto.result.GameResultsId;
 import com.example.pingpong.game.service.GameMatchingService;
 import com.example.pingpong.global.Global;

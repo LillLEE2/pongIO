@@ -19,21 +19,8 @@ import java.util.concurrent.ScheduledFuture;
 @Setter
 @AllArgsConstructor
 @Component
-public abstract class GameInformation {
-    protected GameElement gameElement;
-    protected GameResultsService gameResultsService;
-    protected SimpMessagingTemplate messagingTemplate;
-    protected MatchingResult matchingResult;
-    protected ScheduledFuture<?> timer;
-    public GameInformation(MatchingResult matchingResult, SimpMessagingTemplate messagingTemplate, GameResultsService gameResultsService) {
-        this.gameResultsService = gameResultsService;
-//        this.gameElement = new GameElement();
-        this.messagingTemplate = messagingTemplate;
-        this.matchingResult = matchingResult;
-        this.timer = null;
-    }
-
-    public abstract void positionUpdate(String roomName, String resultId);
+public abstract class GameInformationTest {
+    public abstract void startGame(String roomName, String resultId);
     public abstract void paddleMove(SimpMessageHeaderAccessor accessor, PaddleMoveData data);
 
     public abstract void reStart(SimpMessageHeaderAccessor accessor, GameRoomIdMessage data, ScheduledExecutorService executorService);

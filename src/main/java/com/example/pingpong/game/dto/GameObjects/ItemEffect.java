@@ -7,7 +7,6 @@ import lombok.Setter;
 public enum ItemEffect {
     FREEZE(3000),
     GRAVITY(8000);
-//    SPIN,
 
     private final long durationMillis;
 
