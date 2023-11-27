@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+<div id="count">Count: <span id="countValue">10</span></div> <!-- 초기 디스플레이를 10으로 설정 -->
+<h2>asdasd</h2>
+<button onclick="increment()">Increment</button>
+<button onclick="decrement()">Decrement</button>
+<h2>asdasd</h2>
+<h2>asdasd</h2>
+<h2>asdasd</h2><h2>asdasd</h2><h2>asdasd</h2>
+<h2>asdasd</h2>
+
+<script>
+  function increment() {
+    $.ajax({
+      url: '/api/test/increment',
+      method: 'GET',
+      success: function(response) {
+        $('#countValue').text(response.count); // count 값을 업데이트합니다
+      },
+      error: function(error) {
+        console.error('Error:', error);
+      }
+    });
+  }
+
+  function decrement() {
+    $.ajax({
+      url: '/api/test/decrement',
+      method: 'GET',
+      success: function(response) {
+        $('#countValue').text(response.count); // count 값을 업데이트합니다
+      },
+      error: function(error) {
+        console.error('Error:', error);
+      }
+    });
+  }
+</script>
+</body>
+</html>
