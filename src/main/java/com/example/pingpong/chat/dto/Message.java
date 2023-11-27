@@ -1,9 +1,6 @@
 package com.example.pingpong.chat.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @Builder
@@ -16,6 +13,6 @@ public class Message {
 	}
 	private MessageType messageType;
 	private String content;
-	private String sender;
+	private @Setter String sender;
 
 }

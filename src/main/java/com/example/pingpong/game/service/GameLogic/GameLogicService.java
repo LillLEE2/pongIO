@@ -1,14 +1,7 @@
 package com.example.pingpong.game.service.GameLogic;
 
-import com.example.pingpong.game.dto.GameElements.GameElement;
-import com.example.pingpong.game.dto.GameInformations.GameInformation;
-import com.example.pingpong.game.dto.GameObjects.Ball;
-import com.example.pingpong.game.dto.GameObjects.Paddle;
-import com.example.pingpong.game.dto.GameObjects.PaddleMoveData;
 import com.example.pingpong.game.service.GameResultsService;
-import com.example.pingpong.global.Global;
 import lombok.AllArgsConstructor;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 

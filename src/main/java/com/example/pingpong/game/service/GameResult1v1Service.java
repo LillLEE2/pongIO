@@ -1,6 +1,6 @@
 package com.example.pingpong.game.service;
 
-import com.example.pingpong.game.dto.GameElements.OneOnOneGameElement;
+import com.example.pingpong.game.dto.GameElements.GameElement;
 import com.example.pingpong.game.dto.GameInformations.GameInformation;
 import com.example.pingpong.game.dto.GameInformations.OneOnOneNormalGameInformation;
 import com.example.pingpong.game.dto.result.GameResult1v1;
@@ -24,7 +24,7 @@ public class GameResult1v1Service {
         gameResult1v1Repository.save(gameResult1v1);
     }
     private GameResult1v1 createGameResult1v1(GameResults gameResults, List<String> userList, GameInformation gameroom) {
-        OneOnOneGameElement gameElement = (OneOnOneGameElement)gameroom.getGameElement();
+        GameElement gameElement = gameroom.getGameElement();
         return GameResult1v1.builder()
                 .result1v1Id(gameResults.getId().getRoomId())
                 .resultId(gameResults.getId().getResultId())
@@ -33,8 +33,8 @@ public class GameResult1v1Service {
                 .player2Id(userService.findByNickname(userList.get(1)).get().getUserPk())
                 .winningPlayerId(gameResults.getWinnerId())
                 .losingPlayerId(gameResults.getLowScorerId())
-                .player1Score(gameElement.getLeftScore())
-                .player2Score(gameElement.getRightScore())
+                .player1Score(gameElement.getScore().getLeftScore())
+                .player2Score(gameElement.getScore().getRightScore())
                 .matchDuration(Duration.between(gameResults.getStartTime().toLocalDateTime(), gameResults.getEndTime().toLocalDateTime()))
                 .build();
     }

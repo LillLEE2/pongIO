@@ -1,8 +1,9 @@
 package com.example.pingpong.game.dto.GameInformations;
 
-import com.example.pingpong.game.dto.GameElements.OneOnOneGameElement;
-import com.example.pingpong.game.dto.GameElements.SoloGameElement;
+import com.example.pingpong.game.dto.GameElements.GameElement;
 import com.example.pingpong.game.dto.GameObjects.*;
+import com.example.pingpong.game.dto.GameObjects.sendDataDTO.GameRoomIdMessage;
+import com.example.pingpong.game.dto.GameObjects.sendDataDTO.PaddleMoveData;
 import com.example.pingpong.game.dto.MatchingResult;
 import com.example.pingpong.game.service.GameResultsService;
 import com.example.pingpong.user.dto.UserQueue;
@@ -18,7 +19,7 @@ public class SoloSoloGameInformation extends GameInformation {
     private String userSocketId;
     private int leftPaddleStatus;
     private int rightPaddleStatus;
-    private SoloGameElement gameElement;
+    private GameElement gameElement;
 
     public SoloSoloGameInformation(MatchingResult matchingResult, SimpMessagingTemplate messagingTemplate, GameResultsService gameResultsService) {
         super(matchingResult, messagingTemplate, gameResultsService);
@@ -26,7 +27,7 @@ public class SoloSoloGameInformation extends GameInformation {
         settingUserSocketIds(matchingResult.getUserQueue());
         this.leftPaddleStatus = 0;
         this.rightPaddleStatus = 0;
-        this.gameElement = (SoloGameElement) super.getGameElement();
+        this.gameElement = super.getGameElement();
     }
 
     private void settingUserSocketIds(ConcurrentLinkedQueue<UserQueue> userQueue) {
@@ -129,19 +130,19 @@ public class SoloSoloGameInformation extends GameInformation {
 
     private boolean gameScoreCheck() {
         Ball ball = gameElement.getBallList().get(0);
-        Integer leftScore = gameElement.getLeftScore();
-        Integer rightScore = gameElement.getRightScore();
+        Integer leftScore = gameElement.getScore().getLeftScore();
+        Integer rightScore = gameElement.getScore().getRightScore();
 
         if (ball.getPosX() < 0 || ball.getPosX() + ball.getRadius() * 2 > 100) {
             if (ball.getPosX() < 0) {
-                this.gameElement.setRightScore(rightScore + 1);
+                this.gameElement.getScore().setRightScore(rightScore + 1);
             } else {
-                this.gameElement.setLeftScore(leftScore + 1);
+                this.gameElement.getScore().setRightScore(leftScore + 1);
             }
             resetBallPosition();
         }
 
-        return this.gameElement.getLeftScore() == this.maxScore || this.gameElement.getRightScore() == this.maxScore;
+        return this.gameElement.getScore().getLeftScore() == this.maxScore || this.gameElement.getScore().getRightScore() == this.maxScore;
     }
 
     private void resetBallPosition() {
@@ -161,7 +162,7 @@ public class SoloSoloGameInformation extends GameInformation {
             this.getTimer().cancel(false);
         }
         gameResultsService.finishGame(roomName, resultId);
-        System.out.println("left score: " + this.gameElement.getLeftScore() + ", right score: " + this.gameElement.getRightScore());
+        System.out.println("left score: " + this.gameElement.getScore().getLeftScore() + ", right score: " + this.gameElement.getScore().getRightScore());
         messagingTemplate.convertAndSend("/topic/finish_game/" + roomName, 0);
         System.out.println("game finished");
     }

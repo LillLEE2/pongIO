@@ -1,4 +1,4 @@
-package com.example.pingpong.game.dto.GameObjects;
+package com.example.pingpong.game.dto.GameObjects.sendDataDTO;
 
 import lombok.Getter;
 import lombok.Setter;

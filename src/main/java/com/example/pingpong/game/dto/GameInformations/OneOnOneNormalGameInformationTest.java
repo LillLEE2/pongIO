@@ -1,7 +1,7 @@
 package com.example.pingpong.game.dto.GameInformations;
 
 import com.example.pingpong.game.dto.GameElements.GameElement;
-import com.example.pingpong.game.dto.GameObjects.*;
+import com.example.pingpong.game.dto.GameObjects.Ball;
 import com.example.pingpong.game.dto.GameObjects.sendDataDTO.GameRoomIdMessage;
 import com.example.pingpong.game.dto.GameObjects.sendDataDTO.OneOnOneNormalGameDto;
 import com.example.pingpong.game.dto.GameObjects.sendDataDTO.PaddleMoveData;
@@ -12,18 +12,22 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.Iterator;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
-public class OneOnOneNormalGameInformation extends GameInformation {
+public class OneOnOneNormalGameInformationTest extends GameInformationTest {
     private int maxScore;
     private String[] userSocketIds;
+    private String gameRoomId;
     private GameElement gameElement;
+    private SimpMessagingTemplate messagingTemplate;
+    private MatchingResult matchingResult;
+    private GameResultsService gameResultsService;
+    private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 
-    OneOnOneNormalGameInformation(MatchingResult matchingResult, SimpMessagingTemplate messagingTemplate, GameResultsService gameResultsService) {
-        super(matchingResult, messagingTemplate, gameResultsService);
+    private ScheduledFuture<?> timer;
+
+    OneOnOneNormalGameInformationTest(MatchingResult matchingResult) {
+        super();
         this.maxScore = 2;
         this.userSocketIds = new String[2];
         settingUserSocketIds(matchingResult.getUserQueue());
@@ -37,6 +41,8 @@ public class OneOnOneNormalGameInformation extends GameInformation {
         this.gameElement.addBall();
         this.gameElement.addPaddle(5, 40, 2, 15);
         this.gameElement.addPaddle(93, 40, 2, 15);
+        this.gameElement.getScore().setLeftScore(0);
+        this.gameElement.getScore().setRightScore(0);
     }
 
     private void settingUserSocketIds(ConcurrentLinkedQueue<UserQueue> userQueue) {
@@ -45,6 +51,15 @@ public class OneOnOneNormalGameInformation extends GameInformation {
         for (int i = 0; i < 2; i++) {
             this.userSocketIds[i] = iterator.next().getSocketId();
         }
+    }
+
+    public void startGame(String roomName, String resultId) {
+        System.out.println("start game");
+        messagingTemplate.convertAndSend("/topic/start_game/" + gameRoomId, 0);
+        Runnable positionUpdateTask = () -> positionUpdate(roomName, resultId);
+        long initialDelay = 0;
+        long period = 1000 / 60;
+        ScheduledFuture<?> timer = executorService.scheduleAtFixedRate(positionUpdateTask, initialDelay, period, TimeUnit.MILLISECONDS);
     }
 
     public void positionUpdate(String roomName, String resultId) {
@@ -91,8 +106,8 @@ public class OneOnOneNormalGameInformation extends GameInformation {
 
 
     private void finishGame(String roomName, String resultId) {
-        if (this.getTimer() != null) {
-            this.getTimer().cancel(true);
+        if (timer != null) {
+            timer.cancel(true);
         }
         String winnerSocketId = this.userSocketIds[this.gameElement.getScore().getLeftScore() == this.maxScore ? 0 : 1];
         gameResultsService.finishGame(roomName, resultId);
