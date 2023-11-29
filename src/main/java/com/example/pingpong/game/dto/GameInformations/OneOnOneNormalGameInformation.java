@@ -8,27 +8,24 @@ import com.example.pingpong.game.dto.GameObjects.sendDataDTO.PaddleMoveData;
 import com.example.pingpong.game.dto.MatchingResult;
 import com.example.pingpong.game.service.GameResultsService;
 import com.example.pingpong.user.dto.UserQueue;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import java.util.Iterator;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class OneOnOneNormalGameInformation extends GameInformation {
-    private int maxScore;
     private String[] userSocketIds;
-    private GameElement gameElement;
-
-    OneOnOneNormalGameInformation(MatchingResult matchingResult, SimpMessagingTemplate messagingTemplate, GameResultsService gameResultsService) {
-        super(matchingResult, messagingTemplate, gameResultsService);
-        this.maxScore = 2;
+    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);;
+    private MatchingResult matchingResult;
+    private ScheduledFuture<?> timer;
+    OneOnOneNormalGameInformation(MatchingResult matchingResult, DependencyConfiguration dependencyConfiguration) {
+        super(dependencyConfiguration);
         this.userSocketIds = new String[2];
         settingUserSocketIds(matchingResult.getUserQueue());
+        this.matchingResult = matchingResult;
         this.gameElement = new GameElement();
-//        this.gameElement = super.getGameElement();
         settingGameElement();
     }
 
@@ -47,7 +44,15 @@ public class OneOnOneNormalGameInformation extends GameInformation {
         }
     }
 
-    public void positionUpdate(String roomName, String resultId) {
+    public void startGame(String roomName, String resultId) {
+        System.out.println("startGame");
+        Runnable positionUpdateTask = () -> positionUpdate(roomName, resultId);
+        long initialDelay = 0;
+        long period = 1000 / 60;
+        this.timer = executorService.scheduleAtFixedRate(positionUpdateTask, initialDelay, period, TimeUnit.MILLISECONDS);
+    }
+
+    private void positionUpdate(String roomName, String resultId) {
         System.out.println("/position_update/" + roomName);
         Ball ball = this.gameElement.getBallList().get(0);
         this.gameElement.getPaddleList().get(0).update();
@@ -55,7 +60,7 @@ public class OneOnOneNormalGameInformation extends GameInformation {
         ball.update();
         ball.collision(gameElement);
         boolean gameFinished = gameScoreCheck();
-        messagingTemplate.convertAndSend("/topic/position_update/" + roomName, new OneOnOneNormalGameDto(this.gameElement));
+        dependencyConfiguration.getMessagingTemplate().convertAndSend("/topic/position_update/" + roomName, new OneOnOneNormalGameDto(this.gameElement));
         if (gameFinished)
             finishGame(roomName, resultId);
     }
@@ -85,27 +90,25 @@ public class OneOnOneNormalGameInformation extends GameInformation {
             ball.resetPosition();
         }
 
-        return this.gameElement.getScore().getLeftScore() == this.maxScore || this.gameElement.getScore().getRightScore() == this.maxScore;
+        return this.gameElement.getScore().getLeftScore() == this.gameElement.getScore().getMaxScore() || this.gameElement.getScore().getRightScore() == this.gameElement.getScore().getMaxScore();
     }
 
 
 
     private void finishGame(String roomName, String resultId) {
-        if (this.getTimer() != null) {
-            this.getTimer().cancel(true);
-        }
-        String winnerSocketId = this.userSocketIds[this.gameElement.getScore().getLeftScore() == this.maxScore ? 0 : 1];
-        gameResultsService.finishGame(roomName, resultId);
+        this.timer.cancel(true);
+        String winnerSocketId = this.userSocketIds[this.gameElement.getScore().getLeftScore() == this.gameElement.getScore().getMaxScore() ? 0 : 1];
+        dependencyConfiguration.getGameResultsService().finishGame(matchingResult, roomName, resultId);
         System.out.println("left score: " + this.gameElement.getScore().getLeftScore() + ", right score: " + this.gameElement.getScore().getRightScore());
-        messagingTemplate.convertAndSend("/topic/finish_game/" + roomName, 0);
+        dependencyConfiguration.getMessagingTemplate().convertAndSend("/topic/finish_game/" + roomName, 0);
         System.out.println("game finished");
     }
 
     @Override
     public String getWinnerSocketId() {
-        if (gameElement.getScore().getLeftScore() == maxScore) {
+        if (gameElement.getScore().getLeftScore() == this.gameElement.getScore().getMaxScore()) {
             return this.userSocketIds[0];
-        } else if (gameElement.getScore().getRightScore() == maxScore) {
+        } else if (gameElement.getScore().getRightScore() == this.gameElement.getScore().getMaxScore()) {
             return this.userSocketIds[1];
         } else {
             return null;
@@ -114,9 +117,9 @@ public class OneOnOneNormalGameInformation extends GameInformation {
 
     @Override
     public String getLoserSocketId() {
-        if (gameElement.getScore().getLeftScore() == maxScore) {
+        if (gameElement.getScore().getLeftScore() == this.gameElement.getScore().getMaxScore()) {
             return this.userSocketIds[1];
-        } else if (gameElement.getScore().getRightScore() == maxScore) {
+        } else if (gameElement.getScore().getRightScore() == this.gameElement.getScore().getMaxScore()) {
             return this.userSocketIds[0];
         } else {
             return null;
@@ -144,7 +147,7 @@ public class OneOnOneNormalGameInformation extends GameInformation {
         if (gameElement.getScore().getLeftScore() == -1 && gameElement.getScore().getRightScore() == -1) {
             System.out.println("reStart game");
             String gameRoomId = data.getGameRoomId();
-            messagingTemplate.convertAndSend("/topic/restart_game/" + gameRoomId, 0);
+            dependencyConfiguration.getMessagingTemplate().convertAndSend("/topic/restart_game/" + gameRoomId, 0);
             gameElement.getScore().setLeftScore(0);
             gameElement.getScore().setRightScore(0);
             gameElement.getBallList().get(0).resetPosition();
@@ -162,6 +165,6 @@ public class OneOnOneNormalGameInformation extends GameInformation {
     public void exitUser(SimpMessageHeaderAccessor accessor, GameRoomIdMessage data) {
         String remainSocketId = accessor.getSessionId().equals(userSocketIds[0]) ? userSocketIds[1] : userSocketIds[0];
         System.out.println("exit user: " + accessor.getSessionId() + ", remain user: " + remainSocketId);
-        messagingTemplate.convertAndSend("/topic/exit_game/" + data.getGameRoomId(), 0);
+        dependencyConfiguration.getMessagingTemplate().convertAndSend("/topic/exit_game/" + data.getGameRoomId(), 0);
     }
 }

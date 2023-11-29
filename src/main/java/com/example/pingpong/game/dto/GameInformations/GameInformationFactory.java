@@ -13,8 +13,8 @@ import java.util.concurrent.ScheduledExecutorService;
 @Component
 @AllArgsConstructor
 public class GameInformationFactory {
-    private final GameResultsService gameResultsService;
-
+//    private final GameResultsService gameResultsService;
+    private final DependencyConfiguration dependencyConfiguration;
     public GameInformation createGameInformation(MatchingResult matchingResult, SimpMessagingTemplate messagingTemplate) {
         switch (matchingResult.getRoomType()) {
             case ONE_ON_ONE:
@@ -31,7 +31,7 @@ public class GameInformationFactory {
     private GameInformation createOneOnOneGameInformation(MatchingResult matchingResult, SimpMessagingTemplate messagingTemplate) {
         switch (matchingResult.getGameMode()) {
             case NORMAL:
-                return new OneOnOneNormalGameInformation(matchingResult, messagingTemplate, gameResultsService);
+                return new OneOnOneNormalGameInformation(matchingResult, dependencyConfiguration);
             default:
                 throw new IllegalArgumentException("Invalid game mode: " + matchingResult.getGameMode());
         }
@@ -39,10 +39,10 @@ public class GameInformationFactory {
 
     private GameInformation createSoloGameInformation(MatchingResult matchingResult, SimpMessagingTemplate messagingTemplate) {
         switch (matchingResult.getGameMode()) {
-            case SOLO:
-                return new SoloSoloGameInformation(matchingResult, messagingTemplate, gameResultsService);
-            case RANKED:
-                return new SoloRankedGameInformation(matchingResult, messagingTemplate, gameResultsService);
+//            case SOLO:
+//                return new SoloSoloGameInformation(matchingResult, messagingTemplate, gameResultsService);
+//            case RANKED:
+//                return new SoloRankedGameInformation(matchingResult, messagingTemplate, gameResultsService);
             default:
                 throw new IllegalArgumentException("Invalid game mode: " + matchingResult.getGameMode());
         }

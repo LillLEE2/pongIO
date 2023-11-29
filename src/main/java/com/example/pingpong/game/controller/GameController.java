@@ -58,11 +58,12 @@ public class GameController {
 		ObjectNode jsonObject = objectMapper.createObjectNode();
 		jsonObject.put("gameRoomId", gameResultsId.getRoomId());
 		messagingTemplate.convertAndSend(Global.MATCHING_SUCCESS_DESTINATION, jsonObject);
-		Runnable positionUpdateTask = () -> Global.GAME_ROOMS.get(gameResultsId.getRoomId()).positionUpdate(gameResultsId.getRoomId(), gameResultsId.getResultId());
-		long initialDelay = 0;
-		long period = 1000 / 60;
-		ScheduledFuture<?> timer = executorService.scheduleAtFixedRate(positionUpdateTask, initialDelay, period, TimeUnit.MILLISECONDS);
-		Global.GAME_ROOMS.get(gameResultsId.getRoomId()).setTimer(timer);
+		Global.GAME_ROOMS.get(gameResultsId.getRoomId()).startGame(gameResultsId.getRoomId(), gameResultsId.getResultId());
+//		Runnable positionUpdateTask = () -> Global.GAME_ROOMS.get(gameResultsId.getRoomId()).positionUpdate(gameResultsId.getRoomId(), gameResultsId.getResultId());
+//		long initialDelay = 0;
+//		long period = 1000 / 60;
+//		ScheduledFuture<?> timer = executorService.scheduleAtFixedRate(positionUpdateTask, initialDelay, period, TimeUnit.MILLISECONDS);
+//		Global.GAME_ROOMS.get(gameResultsId.getRoomId()).setTimer(timer);
 	}
 
     @MessageMapping("/paddle_move")

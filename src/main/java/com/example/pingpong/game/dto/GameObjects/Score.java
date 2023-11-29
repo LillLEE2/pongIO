@@ -10,11 +10,12 @@ public class Score {
     Integer leftScore;
     Integer rightScore;
     Integer rankScore;
-
+    Integer maxScore;
     public Score() {
         this.leftScore = 0;
         this.rightScore = 0;
         this.rankScore = 0;
+        this.maxScore = 2;
     }
 
     public void leftScoreUp() {
