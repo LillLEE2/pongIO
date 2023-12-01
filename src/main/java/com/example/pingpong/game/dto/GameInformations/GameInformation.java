@@ -8,6 +8,7 @@ import com.example.pingpong.game.service.GameResultsService;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -20,20 +21,14 @@ import java.util.concurrent.ScheduledFuture;
 @AllArgsConstructor
 @Component
 public abstract class GameInformation {
-    protected GameElement gameElement;
-    protected GameResultsService gameResultsService;
-    protected SimpMessagingTemplate messagingTemplate;
-    protected MatchingResult matchingResult;
-    protected ScheduledFuture<?> timer;
-    public GameInformation(MatchingResult matchingResult, SimpMessagingTemplate messagingTemplate, GameResultsService gameResultsService) {
-        this.gameResultsService = gameResultsService;
-//        this.gameElement = new GameElement();
-        this.messagingTemplate = messagingTemplate;
-        this.matchingResult = matchingResult;
-        this.timer = null;
-    }
 
-    public abstract void positionUpdate(String roomName, String resultId);
+    protected GameElement gameElement;
+    protected DependencyConfiguration dependencyConfiguration;
+    GameInformation(DependencyConfiguration dependencyConfiguration) {
+        this.dependencyConfiguration = dependencyConfiguration;
+        this.gameElement = new GameElement();
+    }
+    public abstract void startGame(String roomName, String resultId);
     public abstract void paddleMove(SimpMessageHeaderAccessor accessor, PaddleMoveData data);
 
     public abstract void reStart(SimpMessageHeaderAccessor accessor, GameRoomIdMessage data, ScheduledExecutorService executorService);

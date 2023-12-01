@@ -81,11 +81,10 @@ public class GameResultsService {
         return gameResults;
     }
 
-    public void finishGame(String roomName, String resultId) {
+    public void finishGame(MatchingResult matchingResult,  String roomName, String resultId) {
         //gameMode 별 분리 필요! 우선은 1대1 기준으로 처리
         GameInformation gameRoom = Global.GAME_ROOMS.get(roomName);
         GameResults gameResults = updateGameResultOnGameFinish(gameRoom, roomName, resultId);
-        MatchingResult matchingResult = gameRoom.getMatchingResult();
         String roomType = matchingResult.getRoomType().getDescription();
         String gameMode = matchingResult.getGameMode().getDescription();
         List<String> userList = getUserList(gameResults);
