@@ -13,14 +13,13 @@ import java.util.concurrent.ScheduledExecutorService;
 @Component
 @AllArgsConstructor
 public class GameInformationFactory {
-//    private final GameResultsService gameResultsService;
     private final DependencyConfiguration dependencyConfiguration;
-    public GameInformation createGameInformation(MatchingResult matchingResult, SimpMessagingTemplate messagingTemplate) {
+    public GameInformation createGameInformation(MatchingResult matchingResult) {
         switch (matchingResult.getRoomType()) {
             case ONE_ON_ONE:
-                return createOneOnOneGameInformation(matchingResult, messagingTemplate);
+                return createOneOnOneGameInformation(matchingResult);
             case SOLO:
-                return createSoloGameInformation(matchingResult, messagingTemplate);
+                return createSoloGameInformation(matchingResult);
 //            case MULTIPLAYER:
 //                return createMultiplayerGameInformation(matchingResult);
             default:
@@ -28,7 +27,7 @@ public class GameInformationFactory {
         }
     }
 
-    private GameInformation createOneOnOneGameInformation(MatchingResult matchingResult, SimpMessagingTemplate messagingTemplate) {
+    private GameInformation createOneOnOneGameInformation(MatchingResult matchingResult) {
         switch (matchingResult.getGameMode()) {
             case NORMAL:
                 return new OneOnOneNormalGameInformation(matchingResult, dependencyConfiguration);
@@ -37,7 +36,7 @@ public class GameInformationFactory {
         }
     }
 
-    private GameInformation createSoloGameInformation(MatchingResult matchingResult, SimpMessagingTemplate messagingTemplate) {
+    private GameInformation createSoloGameInformation(MatchingResult matchingResult) {
         switch (matchingResult.getGameMode()) {
 //            case SOLO:
 //                return new SoloSoloGameInformation(matchingResult, messagingTemplate, gameResultsService);

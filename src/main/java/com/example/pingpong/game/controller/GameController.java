@@ -53,7 +53,7 @@ public class GameController {
     public void matchingSuccess(MatchingResult matchingResult) throws JsonProcessingException {
 		//MATCHING_SUCCESS_DESTINATION
         GameResultsId gameResultsId = gameMatchingService.joinRooms(matchingResult);
-		Global.GAME_ROOMS.put(gameResultsId.getRoomId(), gameInformationFactory.createGameInformation(matchingResult, messagingTemplate));
+		Global.GAME_ROOMS.put(gameResultsId.getRoomId(), gameInformationFactory.createGameInformation(matchingResult));
 		ObjectMapper objectMapper = new ObjectMapper();
 		ObjectNode jsonObject = objectMapper.createObjectNode();
 		jsonObject.put("gameRoomId", gameResultsId.getRoomId());
