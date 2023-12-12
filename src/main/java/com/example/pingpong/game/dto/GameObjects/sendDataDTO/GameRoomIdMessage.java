@@ -7,4 +7,5 @@ import lombok.Setter;
 @Setter
 public class GameRoomIdMessage {
     private String gameRoomId;
+    private String resultId;
 }

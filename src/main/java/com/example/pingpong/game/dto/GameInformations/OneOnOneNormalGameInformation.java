@@ -6,18 +6,17 @@ import com.example.pingpong.game.dto.GameObjects.sendDataDTO.GameRoomIdMessage;
 import com.example.pingpong.game.dto.GameObjects.sendDataDTO.OneOnOneNormalGameDto;
 import com.example.pingpong.game.dto.GameObjects.sendDataDTO.PaddleMoveData;
 import com.example.pingpong.game.dto.MatchingResult;
-import com.example.pingpong.game.service.GameResultsService;
+import com.example.pingpong.game.dto.result.GameResultsId;
 import com.example.pingpong.user.dto.UserQueue;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.*;
 
 public class OneOnOneNormalGameInformation extends GameInformation {
     private String[] userSocketIds;
-    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);;
+    private ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
     private MatchingResult matchingResult;
     private ScheduledFuture<?> timer;
     OneOnOneNormalGameInformation(MatchingResult matchingResult, DependencyConfiguration dependencyConfiguration) {
@@ -100,7 +99,10 @@ public class OneOnOneNormalGameInformation extends GameInformation {
         String winnerSocketId = this.userSocketIds[this.gameElement.getScore().getLeftScore() == this.gameElement.getScore().getMaxScore() ? 0 : 1];
         dependencyConfiguration.getGameResultsService().finishGame(matchingResult, roomName, resultId);
         System.out.println("left score: " + this.gameElement.getScore().getLeftScore() + ", right score: " + this.gameElement.getScore().getRightScore());
-        dependencyConfiguration.getMessagingTemplate().convertAndSend("/topic/finish_game/" + roomName, 0);
+
+        HashMap<String, String> map = new HashMap<>();
+        map.put("resultId", resultId);
+        dependencyConfiguration.getMessagingTemplate().convertAndSend("/topic/finish_game/" + roomName, map);
         System.out.println("game finished");
     }
 
@@ -137,7 +139,9 @@ public class OneOnOneNormalGameInformation extends GameInformation {
     }
 
 
-    public void reStart(SimpMessageHeaderAccessor accessor, GameRoomIdMessage data, ScheduledExecutorService executorService) {
+    public void reStart(SimpMessageHeaderAccessor accessor
+            , GameResultsId gameResultsId
+            , ScheduledExecutorService executorService) {
         System.out.println("reStart");
         if (accessor.getSessionId().equals(userSocketIds[0])) {
             gameElement.getScore().setLeftScore(-1);
@@ -146,19 +150,18 @@ public class OneOnOneNormalGameInformation extends GameInformation {
         }
         if (gameElement.getScore().getLeftScore() == -1 && gameElement.getScore().getRightScore() == -1) {
             System.out.println("reStart game");
-            String gameRoomId = data.getGameRoomId();
+            String gameRoomId = gameResultsId.getRoomId();
+            String resultId = gameResultsId.getResultId();
+
             dependencyConfiguration.getMessagingTemplate().convertAndSend("/topic/restart_game/" + gameRoomId, 0);
             gameElement.getScore().setLeftScore(0);
             gameElement.getScore().setRightScore(0);
             gameElement.getBallList().get(0).resetPosition();
-            // 여기서 DB에 있는 resultId를 가져와야함
-            // String gameResultsId = gameResultsService.getGameResultsId(gameRoomId);
-            String gameResultsId = "1123";
-            Runnable positionUpdateTask = () -> positionUpdate(gameRoomId, gameResultsId);
+
+            Runnable positionUpdateTask = () -> positionUpdate(gameRoomId, resultId);
             long initialDelay = 0;
             long period = 1000 / 60;
             ScheduledFuture<?> timer = executorService.scheduleAtFixedRate(positionUpdateTask, initialDelay, period, TimeUnit.MILLISECONDS);
-            //게임 result DB 다시 만들어야함
         }
     }
 

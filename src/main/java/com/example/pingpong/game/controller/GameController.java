@@ -6,6 +6,7 @@ import com.example.pingpong.game.dto.GameObjects.sendDataDTO.GameRoomIdMessage;
 import com.example.pingpong.game.dto.GameObjects.sendDataDTO.PaddleMoveData;
 import com.example.pingpong.game.dto.result.GameResultsId;
 import com.example.pingpong.game.service.GameMatchingService;
+import com.example.pingpong.game.service.GameResultsService;
 import com.example.pingpong.global.Global;
 import com.example.pingpong.room.model.RoomType;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -22,8 +23,6 @@ import org.springframework.stereotype.Controller;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 @Controller
 @AllArgsConstructor
@@ -32,6 +31,8 @@ public class GameController {
 	private final SimpMessagingTemplate messagingTemplate;
 	private final GameMatchingService gameMatchingService;
 	private final GameInformationFactory gameInformationFactory;
+	private final GameResultsService gameResultsService;
+
 	private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 	@MessageMapping("/matchingJoin")
 	public void matchingAndJoinRoom(@Payload Map<String, String> payload, SimpMessageHeaderAccessor accessor) throws JsonProcessingException {
@@ -80,9 +81,10 @@ public class GameController {
 	}
 
 	@MessageMapping("/game_restart")
-	public void gameReStart(SimpMessageHeaderAccessor accessor, GameRoomIdMessage data) {
+	public void gameReStart(SimpMessageHeaderAccessor accessor, GameRoomIdMessage data) throws JsonProcessingException {
 		String gameRoomId = data.getGameRoomId();
 		System.out.println("/game_restart/" + gameRoomId);
-		Global.GAME_ROOMS.get(gameRoomId).reStart(accessor, data, executorService);
+		GameResultsId resultId = gameResultsService.getMatchResultId(data);
+		Global.GAME_ROOMS.get(gameRoomId).reStart(accessor, resultId, executorService);
 	}
 }

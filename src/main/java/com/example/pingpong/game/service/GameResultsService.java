@@ -1,9 +1,10 @@
 package com.example.pingpong.game.service;
 
 import com.example.pingpong.game.dto.GameInformations.GameInformation;
+import com.example.pingpong.game.dto.GameObjects.sendDataDTO.GameRoomIdMessage;
 import com.example.pingpong.game.dto.MatchingResult;
-import com.example.pingpong.game.service.GameResultSaveStrategy.GameResultSaveStrategy;
 import com.example.pingpong.global.Global;
+import com.example.pingpong.room.repository.RoomRepository;
 import com.example.pingpong.user.service.UserService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.example.pingpong.game.dto.GameMode;
@@ -16,14 +17,13 @@ import com.example.pingpong.room.model.Rooms;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ScheduledFuture;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -31,6 +31,7 @@ public class GameResultsService {
     private final GameResultsRepository gameResultsRepository;
     private final UserService userService;
     private final GameResult1v1Service gameResult1v1Service;
+    private final RoomRepository roomRepository;
 
     public GameResultsId saveParticipation(List<String> nickNameList, Rooms gameRoom) throws JsonProcessingException {
         String matchingRoomId = UUIDGenerator.Generate("MATCHING");
@@ -50,16 +51,17 @@ public class GameResultsService {
                 .build();
     }
 
-    private GameResults createGameResult(GameResultsId gameResultsId, RoomType roomType, GameMode gameMode, Integer participantsCount, List<String> userList) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String summaryJson = objectMapper.writeValueAsString(userList);
+    private GameResults createGameResult(GameResultsId gameResultsId, RoomType roomType, GameMode gameMode, Integer participantsCount, List<String> userList) {
+//        ObjectMapper objectMapper = new ObjectMapper();
+        String summary = String.join(",", userList);
+//        String summaryJson = objectMapper.writeValueAsString(userList);
         return GameResults.builder()
                 .id(gameResultsId)
                 .gameMode(gameMode)
                 .gameType(roomType)
                 .startTime(Timestamp.valueOf(LocalDateTime.now()))
                 .participantsCount(participantsCount)
-                .summary(summaryJson)
+                .summary(summary)
                 .build();
     }
 
@@ -111,7 +113,7 @@ public class GameResultsService {
         ObjectMapper objectMapper = new ObjectMapper();
         List<String> userList;
         try {
-            userList = objectMapper.readValue(gameResults.getSummary(), new TypeReference<List<String>>() {
+            userList = objectMapper.readValue(gameResults.getSummary(), new TypeReference<>() {
             });
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -120,4 +122,18 @@ public class GameResultsService {
         }
         return userList;
     }
+
+    public GameResultsId getMatchResultId(GameRoomIdMessage message) throws JsonProcessingException {
+        GameResultsId resultsId = GameResultsId.builder().resultId(message.getResultId()).roomId(message.getGameRoomId()).build();
+        GameResults gameResults = gameResultsRepository.findById(resultsId);
+
+        String userListString = gameResults.getSummary();
+        String roomId = gameResults.getId().getRoomId();
+
+        List<String> userList = Arrays.asList(userListString.split(","));
+        Rooms rooms = roomRepository.findByRoomId(roomId).get();
+
+        return this.saveParticipation(userList, rooms);
+    }
+
 }
