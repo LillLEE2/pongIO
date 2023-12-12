@@ -15,7 +15,7 @@ public class Item {
     public Item(double xPos, double yPos) {
         this.posX = xPos;
         this.posY = yPos;
-        this.radius = 1;
+        this.radius = 3;
         effect = ItemEffect.values()[(int) (Math.random() * ItemEffect.values().length)];
     }
 }
