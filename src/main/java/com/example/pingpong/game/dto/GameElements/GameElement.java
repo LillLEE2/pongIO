@@ -41,4 +41,28 @@ public class GameElement {
         Item item = new Item(randomX, randomY);
         itemList.add(item);
     }
+
+    public ArrayList<Ball> copyBallList() {
+        ArrayList<Ball> copyBallList = new ArrayList<>();
+        for (Ball ball : ballList) {
+            copyBallList.add(Ball.builder()
+                    .posX(ball.getPosX())
+                    .posY(ball.getPosY())
+                    .radius(ball.getRadius())
+//                    .velocityX(ball.getVelocityX())
+//                    .velocityY(ball.getVelocityY())
+//                    .effect(ball.getEffect())
+//                    .effectStartTime(ball.getEffectStartTime())
+                    .build());
+        }
+        return copyBallList;
+    }
+
+    public ArrayList<Item> copyItemList() {
+        ArrayList<Item> copyItemList = new ArrayList<>();
+        for (Item item : itemList) {
+            copyItemList.add(new Item(item.getPosX(), item.getPosY()));
+        }
+        return copyItemList;
+    }
 }

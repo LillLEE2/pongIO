@@ -40,8 +40,8 @@ public class GameInformationFactory {
         switch (matchingResult.getGameMode()) {
 //            case SOLO:
 //                return new SoloSoloGameInformation(matchingResult, messagingTemplate, gameResultsService);
-//            case RANKED:
-//                return new SoloRankedGameInformation(matchingResult, messagingTemplate, gameResultsService);
+            case RANKED:
+                return new SoloRankedGameInformation(matchingResult, dependencyConfiguration);
             default:
                 throw new IllegalArgumentException("Invalid game mode: " + matchingResult.getGameMode());
         }

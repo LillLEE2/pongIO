@@ -24,7 +24,6 @@ public class OneOnOneNormalGameInformation extends GameInformation {
         this.userSocketIds = new String[2];
         settingUserSocketIds(matchingResult.getUserQueue());
         this.matchingResult = matchingResult;
-        this.gameElement = new GameElement();
         settingGameElement();
     }
 
