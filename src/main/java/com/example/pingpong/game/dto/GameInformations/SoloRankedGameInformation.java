@@ -6,6 +6,7 @@ import com.example.pingpong.game.dto.GameObjects.sendDataDTO.GameRoomIdMessage;
 import com.example.pingpong.game.dto.GameObjects.sendDataDTO.PaddleMoveData;
 import com.example.pingpong.game.dto.GameObjects.sendDataDTO.SoloRankedDto;
 import com.example.pingpong.game.dto.MatchingResult;
+import com.example.pingpong.game.dto.result.GameResultsId;
 import com.example.pingpong.game.service.GameResultsService;
 import com.example.pingpong.user.dto.UserQueue;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -128,9 +129,10 @@ public class SoloRankedGameInformation extends GameInformation {
         dependencyConfiguration.getMessagingTemplate().convertAndSend("/topic/finish_game/" + roomName, 0);
     }
 
-    public void reStart(SimpMessageHeaderAccessor accessor, GameRoomIdMessage data, ScheduledExecutorService executorService) {
-        System.out.println("reStart game");
-        String gameRoomId = data.getGameRoomId();
+    public void reStart(SimpMessageHeaderAccessor accessor
+            , GameResultsId gameResultsId
+            , ScheduledExecutorService executorService) {
+        System.out.println("reStart");
         gameElement.getScore().setRankScore(0);
         gameElement.getBallList().clear();
         gameElement.getItemList().clear();
@@ -138,8 +140,10 @@ public class SoloRankedGameInformation extends GameInformation {
         gameElement.addBall();
         // 여기서 DB에 있는 resultId를 가져와야함
         // String gameResultsId = gameResultsService.getGameResultsId(gameRoomId);
-        String gameResultsId = "1123";
-        Runnable positionUpdateTask = () -> positionUpdate(gameRoomId, gameResultsId);
+        String gameRoomId = gameResultsId.getRoomId();
+        String resultId = gameResultsId.getResultId();
+//        String gameResultsId = "1123";
+        Runnable positionUpdateTask = () -> positionUpdate(gameRoomId, resultId);
         long initialDelay = 0;
         long period = 1000 / 60;
         ScheduledFuture<?> timer = executorService.scheduleAtFixedRate(positionUpdateTask, initialDelay, period, TimeUnit.MILLISECONDS);

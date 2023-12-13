@@ -85,6 +85,9 @@ public class GameController {
 		String gameRoomId = data.getGameRoomId();
 		System.out.println("/game_restart/" + gameRoomId);
 		GameResultsId resultId = gameResultsService.getMatchResultId(data);
+		// ToDo
+		// 모든 사용자가 재시작을 눌렀을 때만 reStart 함수 호출하게 구현해줘
+
 		Global.GAME_ROOMS.get(gameRoomId).reStart(accessor, resultId, executorService);
 	}
 }

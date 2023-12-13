@@ -112,14 +112,7 @@ public class GameResultsService {
     private List<String> getUserList(GameResults gameResults) {
         ObjectMapper objectMapper = new ObjectMapper();
         List<String> userList;
-        try {
-            userList = objectMapper.readValue(gameResults.getSummary(), new TypeReference<>() {
-            });
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return null;
-            // 에러 처리 추가
-        }
+        userList = Arrays.asList(gameResults.getSummary().split(","));
         return userList;
     }
 
